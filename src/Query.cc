@@ -1,5 +1,8 @@
 #include "Query/Query.h"
 
+#include <algorithm>
+#include <sstream>
+
 // TextQuery
 TextQuery::TextQuery(std::ifstream& infile)
     : file_(std::make_shared<std::vector<std::string>>()) {

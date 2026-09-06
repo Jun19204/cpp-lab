@@ -1,12 +1,10 @@
-#include <algorithm>
-#include <cstddef>
+#pragma once
+
 #include <fstream>
 #include <iostream>
-#include <iterator>
 #include <map>
 #include <memory>
 #include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 
