@@ -1,4 +1,5 @@
 #include "Query/Query.h"
+#include "rQuery/rQuery.h"
 
 #include <cstdlib>
 

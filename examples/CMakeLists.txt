@@ -10,6 +10,7 @@ target_link_libraries(
   Query_app
   PRIVATE
   Query_lib
+  rQuery_lib
   project_warnings
   project_sanitizers
 )
