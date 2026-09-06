@@ -17,14 +17,19 @@ int main(int argc, char* argv[]) {
   }
 
   TextQuery text(infile);
-  Query q =
-      (Query("fiery") & Query("bird")) | Query("wind");
+  Query q1 =
+    Query("fiery") & Query("bird") | Query("wind");
 
-  std::cout << q << '\n';
+  Query q2 = 
+    ~Query("Daddy");
 
-  const auto result = q.eval(text);
+  std::cout << q1 << '\n';
+  const auto result1 = q1.eval(text);
+  print(std::cout, result1);
 
-  print(std::cout, result);
+  std::cout << q2 << '\n';
+  const auto result2 = q2.eval(text);
+  print(std::cout, result2);
 
   return EXIT_SUCCESS;
 }
