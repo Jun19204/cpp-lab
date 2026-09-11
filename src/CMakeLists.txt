@@ -8,7 +8,7 @@ add_library(StrVec_lib STATIC StrVec.cc)
 add_library(Basket_lib STATIC Basket.cc)
 add_library(error_code_lib STATIC error_code.cc)
 add_library(Query_lib STATIC Query.cc)
-add_library(rQuery_lib STATIC rQuery.cc)
+#add_library(rQuery_lib STATIC rQuery.cc)
 
 #target_link_libraries(
 #  TextQuery_lib
@@ -24,7 +24,7 @@ set(
   Basket_lib
   error_code_lib
   Query_lib
-  rQuery_lib
+  #rQuery_lib
 )
 
 foreach(lib IN LISTS ALL_LIBS)
