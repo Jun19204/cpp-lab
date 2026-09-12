@@ -44,13 +44,13 @@ target_compile_features(
 
 set(
   ALL_LIBS
-  Mail_lib
-  Sales_data_lib
-  StrVec_lib
-  Basket_lib
-  error_code_lib
-  Query_lib
-  # rQuery_lib
+    Mail_lib
+    Sales_data_lib
+    StrVec_lib
+    Basket_lib
+    error_code_lib
+    Query_lib
+    # rQuery_lib
 )
 
 foreach(lib IN LISTS ALL_LIBS)
