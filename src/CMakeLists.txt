@@ -26,6 +26,18 @@ target_compile_features(
     cxx_std_23
 )
 
+add_library(Quote_headers INTERFACE)
+target_include_directories(
+  Quote_headers
+  INTERFACE
+    "${PROJECT_SOURCE_DIR}/include"
+)
+target_compile_features(
+  Quote_headers
+  INTERFACE
+    cxx_std_23
+)
+
 # ============================================================
 # Common Static Library Settings
 # ============================================================
@@ -47,7 +59,11 @@ foreach(lib IN LISTS ALL_LIBS)
     PUBLIC
       "${PROJECT_SOURCE_DIR}/include"
   )
-
+  target_compile_features(
+    ${lib}
+    PUBLIC
+      cxx_std_23
+  )
   target_link_libraries(
     ${lib}
     PRIVATE
