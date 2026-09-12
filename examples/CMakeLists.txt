@@ -32,4 +32,8 @@ target_link_libraries(
   project_sanitizers
 )
 
+add_executable(
+  BuilderPattern_app
+  builder_pattern-main.cc
+)
 
