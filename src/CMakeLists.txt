@@ -8,13 +8,27 @@ add_library(StrVec_lib STATIC StrVec.cc)
 add_library(Basket_lib STATIC Basket.cc)
 add_library(error_code_lib STATIC error_code.cc)
 add_library(Query_lib STATIC Query.cc)
-#add_library(rQuery_lib STATIC rQuery.cc)
+# add_library(rQuery_lib STATIC rQuery.cc)
 
-#target_link_libraries(
-#  TextQuery_lib
-#  PRIVATE
-#  StrVec_lib
-#)
+# ============================================================
+# Header-only Libraries
+# ============================================================
+
+add_library(MyTemplate_lib INTERFACE)
+target_include_directories(
+  MyTemplate_lib
+  INTERFACE
+    "${PROJECT_SOURCE_DIR}/include"
+)
+target_compile_features(
+  MyTemplate_lib
+  INTERFACE
+    cxx_std_23
+)
+
+# ============================================================
+# Common Static Library Settings
+# ============================================================
 
 set(
   ALL_LIBS
@@ -24,21 +38,21 @@ set(
   Basket_lib
   error_code_lib
   Query_lib
-  #rQuery_lib
+  # rQuery_lib
 )
 
 foreach(lib IN LISTS ALL_LIBS)
   target_include_directories(
     ${lib}
     PUBLIC
-    "${PROJECT_SOURCE_DIR}/include"
+      "${PROJECT_SOURCE_DIR}/include"
   )
 
   target_link_libraries(
     ${lib}
     PRIVATE
-    project_warnings
-    project_sanitizers
+      project_warnings
+      project_sanitizers
   )
 endforeach()
 
