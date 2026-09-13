@@ -1,4 +1,5 @@
 #include "MyTemplate/myfind.h"
+#include "MyTemplate/compare.h"
 
 #include <cstdlib>
 #include <string>
@@ -21,11 +22,16 @@ int main() {
   std::string input;
   while (std::cin >> input && input != "q") {
     if (myfind(str_vec.begin(), str_vec.end(), input) != str_vec.end()) {
-      std::cout << "찾았습니다!\n";
+      std::cout << "찾았습니다!\n\n";
       break;
     }
     std::cout << "못찾았습니다...\n";
     std::cout << "\nword to find: ";
+  }
+
+  
+  if (compare("you are my sunshine", "you are my danger") != 0) {
+    std::cout << "두 문장이 다릅니다.\n";
   }
 
   return EXIT_SUCCESS;
