@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <functional>
 
 template <typename T>
@@ -14,3 +15,8 @@ int compare(const T& left, const T& right) {
   return 0;
 }
 
+
+template <unsigned N, unsigned M>
+int compare(const char (&left) [N], const char (&right) [M]) {
+  return strcmp(left, right);
+}
