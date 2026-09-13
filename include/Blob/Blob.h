@@ -26,8 +26,8 @@ public:
   const T& front() const;
   T& back();
   const T& back() const;
-  T& operator[] (size_type i) { return data_[i]; }
-  const T& operator[] (size_type i) const { return data_[i]; };
+  T& operator[] (size_type i) { return *(data_)[i]; }
+  const T& operator[] (size_type i) const { return *(data_)[i]; };
 private:
   std::shared_ptr<std::vector<T>> data_;
   // throws msg if data[i] isn't valid
