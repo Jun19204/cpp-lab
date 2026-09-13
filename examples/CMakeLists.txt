@@ -5,7 +5,7 @@
 add_executable(Query_app Query-main.cc)
 add_executable(Quote_app Quote-main.cc)
 add_executable(BuilderPattern_app builder_pattern-main.cc)
-add_executable(TestTemplate_app TestTemplate.cc)
+add_executable(TestTemplate_app TestTemplate-main.cc)
 
 # ============================================================
 # Link Libararies
