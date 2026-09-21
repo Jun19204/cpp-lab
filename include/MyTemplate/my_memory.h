@@ -40,6 +40,7 @@ public:
     return ptr_ != nullptr;
   }
 
+
 private:
   void add_ref();
   void release();
