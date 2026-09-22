@@ -167,12 +167,34 @@ public:
 
   my_unique_ptr()
     : ptr_(nullptr), del_([](T* ptr){ delete ptr; }) { }
+
   explicit my_unique_ptr(T* raw_ptr)
     : ptr_(raw_ptr), del_([](T* ptr){ delete ptr; }) { }
+
   my_unique_ptr(T* raw_ptr, D del)
     : ptr_(raw_ptr), del_(del) { }
+
   my_unique_ptr(const my_unique_ptr&) = delete;
+
+  my_unique_ptr(my_unique_ptr&& other) noexcept 
+    : ptr_(nullptr), del_([](T* ptr){ delete ptr; }) { // 이동 대입 연산자를 
+                                                       // 안전하게 사용하기 위해 먼저 초기화 실시
+    *this = std::move(other);
+  }
+
   my_unique_ptr& operator=(const my_unique_ptr&) = delete;
+
+  my_unique_ptr& operator=(my_unique_ptr&& other) noexcept {
+    if (this != &other) {
+      if (ptr_) {
+        del_(ptr_);
+      }
+      del_ = other.release();
+      del_ = std::move(other.del_);
+    }
+    return *this;
+  }
+
   ~my_unique_ptr() {
     if (ptr_) {
       del_(ptr_);
