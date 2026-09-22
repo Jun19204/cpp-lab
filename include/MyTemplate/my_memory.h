@@ -55,8 +55,8 @@ public:
 
 
 private:
-  void add_ref();
   void release();
+  void add_ref();
   T* ptr_{nullptr};
   size_type* ref_cnt_{nullptr};
   deleter_type del_{nullptr};
@@ -155,20 +155,29 @@ my_shared_ptr<T>::~my_shared_ptr() {
 
 
 // 유사 unique_ptr 클래스
-template <typename T, typename D=std::function<T>>
+template <typename T, typename D=std::function<void(T*)>>
 class my_unique_ptr {
 public:
-  friend void swap(T* lhs, T* rhs) noexcept;
+  using value_type = T;
+  using deleter_type = D;
+  friend void swap(my_unique_ptr& lhs, my_unique_ptr& rhs) noexcept;
 
-  my_unique_ptr() noexcept = default;
-  explicit my_unique_ptr(T* raw_ptr);
+  explicit my_unique_ptr(T* raw_ptr, D del=[](T* ptr){ delete ptr; })
+    : ptr_{raw_ptr}, del_{del} { }
+  my_unique_ptr(const my_unique_ptr&) = delete;
+  my_unique_ptr& operator=(const my_unique_ptr&) = delete;
+  
+  ~my_unique_ptr();
+
   [[nodiscard]] T* get() {
     return ptr_;
   }
+  
+  void release();
 
 private:
   T* ptr_{nullptr};
-  D del_{};
+  deleter_type del_;
 };
 
 
