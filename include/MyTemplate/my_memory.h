@@ -4,6 +4,7 @@
 #include <utility>
 #include <functional>
 
+// 유사 shared_ptr 클래스
 template <typename T>
 class my_shared_ptr {
 public:
@@ -15,6 +16,7 @@ public:
     lhs.swap(rhs);
   };
 
+  my_shared_ptr() noexcept = default;
   explicit my_shared_ptr(T* raw_ptr, deleter_type del=nullptr);
   my_shared_ptr(const my_shared_ptr& other);
   my_shared_ptr(my_shared_ptr&& other) noexcept;
@@ -84,14 +86,14 @@ void my_shared_ptr<T>::release() {
   del_ = nullptr;
 }
 
-// 생성자
+/* 생성자(메개변수 1/2개 버전) */
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(T* raw_ptr, deleter_type del) 
   : ptr_{raw_ptr}, 
     ref_cnt_{new std::size_t(1)}, 
     del_{del} { }
 
-// 복사 생성자
+/* 복사 생성자 */
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(const my_shared_ptr& other)
   : ptr_{other.ptr_}, 
@@ -100,7 +102,7 @@ my_shared_ptr<T>::my_shared_ptr(const my_shared_ptr& other)
   add_ref();
 }
 
-// 이동 생성자
+/* 이동 생성자 */
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(my_shared_ptr&& other) noexcept
   : ptr_{other.ptr_},
@@ -111,7 +113,7 @@ my_shared_ptr<T>::my_shared_ptr(my_shared_ptr&& other) noexcept
   other.del_ = nullptr;
 }
 
-// 복사 대입 연산자
+/* 복사 대입 연산자 */
 template <typename T>
 my_shared_ptr<T>& 
 my_shared_ptr<T>::operator=(const my_shared_ptr& other) {
@@ -126,7 +128,7 @@ my_shared_ptr<T>::operator=(const my_shared_ptr& other) {
   return *this;
 }
 
-// 이동 대입 연산자
+/* 이동 대입 연산자 */
 template <typename T>
 my_shared_ptr<T>&
 my_shared_ptr<T>::operator=(my_shared_ptr&& other) noexcept {
@@ -142,7 +144,7 @@ my_shared_ptr<T>::operator=(my_shared_ptr&& other) noexcept {
   return *this;
 }
 
-// 소멸자
+/* 소멸자 */
 template <typename T>
 my_shared_ptr<T>::~my_shared_ptr() {
   release();
@@ -152,18 +154,21 @@ my_shared_ptr<T>::~my_shared_ptr() {
 
 
 
-
-template <typename T, typename D>
+// 유사 unique_ptr 클래스
+template <typename T, typename D=std::function<T>>
 class my_unique_ptr {
-  friend void swap(T* lhs, T* rhs);
 public:
-  using deleter_type = std::function<D>;
+  friend void swap(T* lhs, T* rhs) noexcept;
 
-  [[nodiscard]] T* get();
+  my_unique_ptr() noexcept = default;
+  explicit my_unique_ptr(T* raw_ptr);
+  [[nodiscard]] T* get() {
+    return ptr_;
+  }
 
 private:
   T* ptr_{nullptr};
-  deleter_type del_{nullptr};
+  D del_{};
 };
 
 
