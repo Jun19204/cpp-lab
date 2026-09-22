@@ -89,8 +89,8 @@ void my_shared_ptr<T>::release() {
 /* 생성자(메개변수 1/2개 버전) */
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(T* raw_ptr, deleter_type del) 
-  : ptr_(raw_ptr), 
-    ref_cnt_(new std::size_t(1)), 
+  : ptr_(raw_ptr),
+    ref_cnt_(raw_ptr ? new std::size_t(1) : nullptr),
     del_(del) { }
 
 /* 복사 생성자 */
@@ -189,7 +189,7 @@ public:
       if (ptr_) {
         del_(ptr_);
       }
-      del_ = other.release();
+      ptr_ = other.release();
       del_ = std::move(other.del_);
     }
     return *this;
