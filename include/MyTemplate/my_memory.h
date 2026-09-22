@@ -11,6 +11,10 @@ public:
   using size_type = std::size_t;
   using deleter_type = std::function<void(T*)>;
 
+  friend void swap(my_shared_ptr& lhs, my_shared_ptr& rhs) noexcept {
+    lhs.swap(rhs);
+  };
+
   explicit my_shared_ptr(T* raw_ptr, deleter_type del=nullptr);
   my_shared_ptr(const my_shared_ptr& other);
   my_shared_ptr(my_shared_ptr&& other) noexcept;
@@ -38,6 +42,13 @@ public:
 
   explicit operator bool() const noexcept {
     return ptr_ != nullptr;
+  }
+
+  void swap(my_shared_ptr& rhs) noexcept {
+    using std::swap;
+    swap(ptr_, rhs.ptr_);
+    swap(ref_cnt_, rhs.ref_cnt_);
+    swap(del_, rhs.del_);
   }
 
 
@@ -76,19 +87,25 @@ void my_shared_ptr<T>::release() {
 // 생성자
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(T* raw_ptr, deleter_type del) 
-  : ptr_{raw_ptr}, ref_cnt_{new std::size_t(1)}, del_{del} { }
+  : ptr_{raw_ptr}, 
+    ref_cnt_{new std::size_t(1)}, 
+    del_{del} { }
 
 // 복사 생성자
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(const my_shared_ptr& other)
-  : ptr_{other.ptr_}, ref_cnt_{other.ref_cnt_}, del_{other.del_} { 
+  : ptr_{other.ptr_}, 
+    ref_cnt_{other.ref_cnt_}, 
+    del_{other.del_} { 
   add_ref();
 }
 
 // 이동 생성자
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(my_shared_ptr&& other) noexcept
-  : ptr_{other.ptr_}, ref_cnt_{other.ref_cnt_}, del_{other.del_} {
+  : ptr_{other.ptr_},
+    ref_cnt_{other.ref_cnt_}, 
+    del_{std::move(other.del_)} {
   other.ptr_ = nullptr;
   other.ref_cnt_ = nullptr;
   other.del_ = nullptr;
@@ -122,7 +139,6 @@ my_shared_ptr<T>::operator=(my_shared_ptr&& other) noexcept {
   del_ = std::move(other.del_);
   other.ptr_ = nullptr;
   other.ref_cnt_ = nullptr;
-  other.del_ = nullptr;
   return *this;
 }
 
@@ -131,4 +147,28 @@ template <typename T>
 my_shared_ptr<T>::~my_shared_ptr() {
   release();
 }
+
+
+
+
+
+
+template <typename T, typename D>
+class my_unique_ptr {
+  friend void swap(T* lhs, T* rhs);
+public:
+  using deleter_type = std::function<D>;
+
+  [[nodiscard]] T* get();
+
+private:
+  T* ptr_{nullptr};
+  deleter_type del_{nullptr};
+};
+
+
+
+
+
+
 
