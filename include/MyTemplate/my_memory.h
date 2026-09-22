@@ -89,25 +89,25 @@ void my_shared_ptr<T>::release() {
 /* 생성자(메개변수 1/2개 버전) */
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(T* raw_ptr, deleter_type del) 
-  : ptr_{raw_ptr}, 
-    ref_cnt_{new std::size_t(1)}, 
-    del_{del} { }
+  : ptr_(raw_ptr), 
+    ref_cnt_(new std::size_t(1)), 
+    del_(del) { }
 
 /* 복사 생성자 */
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(const my_shared_ptr& other)
-  : ptr_{other.ptr_}, 
-    ref_cnt_{other.ref_cnt_}, 
-    del_{other.del_} { 
+  : ptr_(other.ptr_), 
+    ref_cnt_(other.ref_cnt_), 
+    del_(other.del_) { 
   add_ref();
 }
 
 /* 이동 생성자 */
 template <typename T>
 my_shared_ptr<T>::my_shared_ptr(my_shared_ptr&& other) noexcept
-  : ptr_{other.ptr_},
-    ref_cnt_{other.ref_cnt_}, 
-    del_{std::move(other.del_)} {
+  : ptr_(other.ptr_),
+    ref_cnt_(other.ref_cnt_), 
+    del_(std::move(other.del_)) {
   other.ptr_ = nullptr;
   other.ref_cnt_ = nullptr;
   other.del_ = nullptr;
@@ -160,24 +160,41 @@ class my_unique_ptr {
 public:
   using value_type = T;
   using deleter_type = D;
-  friend void swap(my_unique_ptr& lhs, my_unique_ptr& rhs) noexcept;
 
-  explicit my_unique_ptr(T* raw_ptr, D del=[](T* ptr){ delete ptr; })
-    : ptr_{raw_ptr}, del_{del} { }
+  friend void swap(my_unique_ptr& lhs, my_unique_ptr& rhs) noexcept {
+    lhs.swap(rhs);
+  }
+
+  my_unique_ptr()
+    : ptr_(nullptr), del_([](T* ptr){ delete ptr; }) { }
+  explicit my_unique_ptr(T* raw_ptr)
+    : ptr_(raw_ptr), del_([](T* ptr){ delete ptr; }) { }
+  my_unique_ptr(T* raw_ptr, D del)
+    : ptr_(raw_ptr), del_(del) { }
   my_unique_ptr(const my_unique_ptr&) = delete;
   my_unique_ptr& operator=(const my_unique_ptr&) = delete;
-  
-  ~my_unique_ptr();
+  ~my_unique_ptr() { release(); }
+
+  void swap(my_unique_ptr& rhs) noexcept {
+    using std::swap;
+    swap(ptr_, rhs.ptr_);
+    swap(del_, rhs.del_);
+  }
 
   [[nodiscard]] T* get() {
     return ptr_;
   }
   
-  void release();
+  void release() {
+    if (ptr_) {
+      del_(ptr_);
+    }
+    ptr_ = nullptr;
+  }
 
 private:
-  T* ptr_{nullptr};
-  deleter_type del_;
+  T* ptr_;
+  D del_;
 };
 
 
