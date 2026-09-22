@@ -173,7 +173,12 @@ public:
     : ptr_(raw_ptr), del_(del) { }
   my_unique_ptr(const my_unique_ptr&) = delete;
   my_unique_ptr& operator=(const my_unique_ptr&) = delete;
-  ~my_unique_ptr() { release(); }
+  ~my_unique_ptr() {
+    if (ptr_) {
+      del_(ptr_);
+    }
+    ptr_ = nullptr;
+  }
 
   void swap(my_unique_ptr& rhs) noexcept {
     using std::swap;
@@ -185,11 +190,10 @@ public:
     return ptr_;
   }
   
-  void release() {
-    if (ptr_) {
-      del_(ptr_);
-    }
+  [[nodiscard]] T* release() {
+    T* temp = ptr_;
     ptr_ = nullptr;
+    return temp;
   }
 
 private:
