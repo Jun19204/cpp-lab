@@ -53,7 +53,6 @@ public:
     swap(del_, rhs.del_);
   }
 
-
 private:
   void release();
   void add_ref();
@@ -61,7 +60,6 @@ private:
   size_type* ref_cnt_{nullptr};
   deleter_type del_{nullptr};
 };
-
 
 
 template <typename T>
