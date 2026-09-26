@@ -4,7 +4,13 @@
 #include <utility>
 #include <functional>
 
-// 유사 shared_ptr 클래스
+
+/* 
+ * 유사 shared_ptr 클래스
+ * 삭제가 타입이 동적 바인딩이 가능해야함
+ * 따라서 런타임에 삭제자 바인딩 완료
+ * 객체의 소유권을 공유하고 그 참조 횟수를 카운팅
+ */
 template <typename T>
 class my_shared_ptr {
 public:
@@ -150,9 +156,12 @@ my_shared_ptr<T>::~my_shared_ptr() {
 
 
 
-
-
-// 유사 unique_ptr 클래스
+/* 
+ * 유사 unique_ptr 클래스
+ * 삭제가 타입이 임베딩되어 있음
+ * 따라서 컴파일 타임에 삭제자 바인딩 완료
+ * 객체의 소유권을 독점적으로 가짐
+ */
 template <typename T, typename D=std::function<void(T*)>>
 class my_unique_ptr {
 public:
@@ -220,10 +229,6 @@ private:
   T* ptr_;
   D del_;
 };
-
-
-
-
 
 
 
