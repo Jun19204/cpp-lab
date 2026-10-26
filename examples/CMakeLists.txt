@@ -6,6 +6,7 @@ add_executable(Query_app Query-main.cc)
 add_executable(Quote_app Quote-main.cc)
 add_executable(BuilderPattern_app builder_pattern-main.cc)
 add_executable(TestTemplate_app TestTemplate-main.cc)
+add_executable(TestDisasm_app TestDisasm-main.cc)
 
 # ============================================================
 # Link Libararies
@@ -38,6 +39,7 @@ set(
     Quote_app
     BuilderPattern_app
     TestTemplate_app
+    TestDisasm_app
 )
 foreach(exe IN LISTS ALL_EXES)
   target_compile_features(
