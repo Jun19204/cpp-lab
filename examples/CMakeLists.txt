@@ -29,6 +29,13 @@ target_link_libraries(
     MyTemplate_lib
 )
 
+target_link_libraries(
+  TestDisasm_app
+  PRIVATE
+    Disasm_headers
+)
+
+
 # ===========================================================
 # Common Settings
 # ===========================================================

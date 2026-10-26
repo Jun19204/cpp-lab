@@ -1,3 +1,6 @@
+#ifndef RV32I_H
+#define RV32I_H
+
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -256,3 +259,5 @@ private:
     return std::make_unique<UnknownInstr>(bits);
   }
 };
+
+#endif

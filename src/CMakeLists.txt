@@ -38,6 +38,19 @@ target_compile_features(
     cxx_std_23
 )
 
+add_library(Disasm_headers INTERFACE)
+target_include_directories(
+  Disasm_headers
+  INTERFACE
+    "${PROJECT_SOURCE_DIR}/include"
+)
+target_compile_features(
+  Disasm_headers
+  INTERFACE
+    cxx_std_23
+)
+
+
 # ============================================================
 # Common Static Library Settings
 # ============================================================
