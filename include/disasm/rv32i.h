@@ -1,11 +1,9 @@
 #ifndef RV32I_H
 #define RV32I_H
 
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <array>
 
@@ -19,7 +17,7 @@ public:
   Instruction(uint32_t bits) : raw_bits(bits) {}
   virtual ~Instruction() = default;
   [[nodiscard]]
-  virtual std::string disassemble(uint32_t pc) const = 0;
+  virtual std::string disassemble([[maybe_unused]] uint32_t pc) const = 0;
 };
 
 
@@ -96,7 +94,8 @@ public:
 struct AddInstr : RType {
   using RType::RType;
   [[nodiscard]]
-  std::string disassemble(uint32_t pc) const override {
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+
     std::array<char, 64> buf;
     snprintf(
         buf.data(), buf.max_size(), 
@@ -110,7 +109,7 @@ struct AddInstr : RType {
 struct SubInstr : RType {
   using RType::RType;
   [[nodiscard]]
-  std::string disassemble(uint32_t pc) const override {
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
     std::array<char, 64> buf;
     snprintf(
         buf.data(), buf.max_size(), 
@@ -125,7 +124,7 @@ struct SubInstr : RType {
 struct LwInstr : IType {
   using IType::IType;
   [[nodiscard]]
-  std::string disassemble(uint32_t pc) const override {
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
     std::array<char, 64> buf;
     snprintf(
         buf.data(), buf.max_size(), 
@@ -139,7 +138,7 @@ struct LwInstr : IType {
 struct SwInstr : SType {
   using SType::SType;
   [[nodiscard]]
-  std::string disassemble(uint32_t pc) const override {
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
     std::array<char, 64> buf;
     snprintf(
         buf.data(), buf.max_size(), 
@@ -153,7 +152,7 @@ struct SwInstr : SType {
 struct BeqInstr : BType {
   using BType::BType;
   [[nodiscard]]
-  std::string disassemble(uint32_t pc) const override {
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
     std::array<char, 64> buf;
     snprintf(
         buf.data(), buf.max_size(), 
@@ -167,7 +166,7 @@ struct BeqInstr : BType {
 struct UnknownInstr : Instruction {
   using Instruction::Instruction;
   [[nodiscard]]
-  std::string disassemble(uint32_t pc) const override {
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
     return "unknown";
   }
 };
