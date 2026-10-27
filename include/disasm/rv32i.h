@@ -2,10 +2,9 @@
 #define RV32I_H
 
 #include <cstdint>
-#include <cstdio>
+#include <format>
 #include <memory>
 #include <string>
-#include <array>
 
 // 
 // 최상위 추상 클래스
@@ -95,14 +94,8 @@ struct AddInstr : RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-
-    std::array<char, 64> buf;
-    snprintf(
-        buf.data(), buf.max_size(), 
-        "add   x%d, x%d, x%d", 
-        rd, rs1, rs2
-    );
-    return buf.data();
+    std::string cmd = std::format("add   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
   }
 };
 
@@ -110,13 +103,8 @@ struct SubInstr : RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::array<char, 64> buf;
-    snprintf(
-        buf.data(), buf.max_size(), 
-        "sub   x%d, x%d, x%d", 
-        rd, rs1, rs2
-    );
-    return buf.data();
+    std::string cmd = std::format("sub   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
   }
 };
 
@@ -125,13 +113,8 @@ struct LwInstr : IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::array<char, 64> buf;
-    snprintf(
-        buf.data(), buf.max_size(), 
-        "lw   x%d, %d(x%d)",
-        rd, imm, rs1
-    );
-    return buf.data();
+    std::string cmd = std::format("lw   x{}, {}(x{})", rd, imm, rs1);
+    return cmd;
   }
 };
 
@@ -139,13 +122,8 @@ struct SwInstr : SType {
   using SType::SType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::array<char, 64> buf;
-    snprintf(
-        buf.data(), buf.max_size(), 
-        "sw   x%d, %d(x%d)",
-        rs2, imm, rs1
-    );
-    return buf.data();
+    std::string cmd = std::format("sw   x{}, {}(x{})", rs2, imm, rs1);
+    return cmd;
   }
 };
 
@@ -153,13 +131,8 @@ struct BeqInstr : BType {
   using BType::BType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::array<char, 64> buf;
-    snprintf(
-        buf.data(), buf.max_size(), 
-        "beq   x%d, x%d, pc+%d", 
-        rs1, rs2, imm
-    );
-    return buf.data();
+    std::string cmd = std::format("beq   x{}, x{}, pc+({})", rs1, rs2, imm);
+    return cmd;
   }
 };
 
