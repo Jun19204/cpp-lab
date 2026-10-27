@@ -40,3 +40,4 @@ foreach(exe IN LISTS ALL_EXES)
       project_sanitizers
   )
 endforeach()
+
