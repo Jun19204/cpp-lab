@@ -3,7 +3,10 @@
 
 #include <cstdint>
 #include <format>
+#include <iomanip>
+#include <ios>
 #include <memory>
+#include <sstream>
 #include <string>
 
 // 
@@ -21,7 +24,7 @@ public:
 
 
 // 
-// 포멧별 중간 클래스
+// 포멧별 Intermediate 클래스
 //
 class RType : public Instruction {
 protected:
@@ -131,7 +134,11 @@ struct BeqInstr : BType {
   using BType::BType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::string cmd = std::format("beq   x{}, x{}, pc+({})", rs1, rs2, imm);
+    std::stringstream target_address;
+    target_address << "0x" << std::setw(8) << std::setfill('0') 
+                   << std::hex << static_cast<int32_t>(pc) + imm;
+    std::string cmd 
+      = std::format("beq   x{}, x{}, {}", rs1, rs2, target_address.str());
     return cmd;
   }
 };
