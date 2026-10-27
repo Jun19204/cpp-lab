@@ -113,7 +113,7 @@ struct LwInstr : IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::string cmd = std::format("lw   x{}, {}(x{})", rd, imm, rs1);
+    std::string cmd = std::format("lw    x{}, {}(x{})", rd, imm, rs1);
     return cmd;
   }
 };
@@ -122,7 +122,7 @@ struct SwInstr : SType {
   using SType::SType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::string cmd = std::format("sw   x{}, {}(x{})", rs2, imm, rs1);
+    std::string cmd = std::format("sw    x{}, {}(x{})", rs2, imm, rs1);
     return cmd;
   }
 };
