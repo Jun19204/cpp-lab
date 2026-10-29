@@ -1,13 +1,14 @@
-#include "MyString/MyString.h"
+#include "MyString.h"
 
 #include <utility>
 #include <ostream>
 #include <cstddef>
 
-MyString::MyString() : len_(0), data_(new char[1]) {}
-
-MyString::MyString(std::size_t len) 
+MyString::MyString(std::size_t len, char ch) 
   : len_(len), data_(new char[len + 1]) {
+  for (std::size_t i=0; i < len_; ++i) {
+    data_[i] = ch;
+  }
   data_[len_] = '\0';
 }
 
