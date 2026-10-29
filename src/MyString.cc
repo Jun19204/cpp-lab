@@ -1,4 +1,4 @@
-#include "MyString.h"
+#include "MyString/MyString.h"
 
 #include <utility>
 #include <ostream>

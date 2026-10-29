@@ -21,8 +21,7 @@ public:
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  MyString();
-  MyString(std::size_t len);
+  MyString(std::size_t len = 0, char ch = '\0');
   MyString(const char* raw_str);
   MyString(const MyString& other);
   MyString(MyString&& other) noexcept;
