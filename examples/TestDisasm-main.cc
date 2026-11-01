@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   auto text_bytes = parser->extractTextSection();
 
   std::vector<uint32_t> instructions;
-  for (size_t i = 0; i < text_bytes.size(); i += 4) {
+  for (size_t i = 0; i + 3 < text_bytes.size(); i += 4) {
     uint32_t inst{0};
     std::memcpy(&inst, &text_bytes[i], sizeof(uint32_t));
     instructions.push_back(inst);
