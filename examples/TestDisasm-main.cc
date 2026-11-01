@@ -1,4 +1,4 @@
-#include "disasm/rv32i.h"
+#include "disasm/RV32I.h"
 #include "disasm/ElfParser.h"
 
 #include <cstdlib>
