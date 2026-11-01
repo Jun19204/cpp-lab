@@ -11,7 +11,7 @@
 
 TEST(DisasmIntegrationTest, DumpTestBinary) {
   std::uint32_t pc = 0x00000000;
-  std::string file_path = "/home/junyong/cpp-lab/resource/test.bin";
+  std::string file_path = "/home/junyong/cpp-lab/resource/test.out";
 
   ASSERT_TRUE(std::filesystem::exists(file_path))
       << "테스트 바이너리가 존재하지 않습니다.";
