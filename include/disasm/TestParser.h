@@ -32,7 +32,6 @@ parseBinary(const std::filesystem::path &filepath) {
   if (file_size == 0) {
     throw std::runtime_error("파일이 비어있습니다 (0 bytes)");
   }
-
   if (file_size % sizeof(uint16_t) != 0) {
     throw std::runtime_error(
         "잘못된 바이너리 파일 크기 (2바이트 배수가 아님): " +
@@ -48,15 +47,12 @@ parseBinary(const std::filesystem::path &filepath) {
 
   std::vector<uint32_t> instructions;
   size_t pos = 0;
-
   while (pos < file_size) {
     if (pos + sizeof(uint16_t) > file_size) {
       throw std::runtime_error("파일이 비정상적으로 잘렸습니다.");
     }
-    
     uint16_t half = 0;
     std::memcpy(&half, &buffer[pos], sizeof(uint16_t));
-    
     if ((half & 0x3) != 0x3) {
       // 16비트 압축 명령어
       instructions.push_back(static_cast<uint32_t>(half));
@@ -72,7 +68,6 @@ parseBinary(const std::filesystem::path &filepath) {
       pos += 4;
     }
   }
-
   return instructions;
 }
 

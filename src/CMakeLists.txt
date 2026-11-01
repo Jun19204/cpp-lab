@@ -9,46 +9,38 @@ add_library(Basket_lib STATIC Basket.cc)
 add_library(error_code_lib STATIC error_code.cc)
 add_library(Query_lib STATIC Query.cc)
 add_library(MyString_lib STATIC MyString.cc)
+add_library(RV32I_lib STATIC RV32I.cc)
 
 # ============================================================
 # Header-only Libraries
 # ============================================================
 
-add_library(MyTemplate_lib INTERFACE)
-target_include_directories(
-  MyTemplate_lib
-  INTERFACE
-    "${PROJECT_SOURCE_DIR}/include"
-)
-target_compile_features(
-  MyTemplate_lib
-  INTERFACE
-    cxx_std_23
+set(
+  ALL_HERDERS
+    MyTemplate_lib
+    Quote_headers
+    Disasm_headers
 )
 
-add_library(Quote_headers INTERFACE)
-target_include_directories(
-  Quote_headers
-  INTERFACE
-    "${PROJECT_SOURCE_DIR}/include"
-)
-target_compile_features(
-  Quote_headers
-  INTERFACE
-    cxx_std_23
-)
-
-add_library(Disasm_headers INTERFACE)
-target_include_directories(
-  Disasm_headers
-  INTERFACE
-    "${PROJECT_SOURCE_DIR}/include"
-)
-target_compile_features(
-  Disasm_headers
-  INTERFACE
-    cxx_std_23
-)
+foreach(header IN LISTS ALL_HERDERS)
+  add_library(${header} INTERFACE)
+  target_include_directories(
+    ${header}
+    INTERFACE
+      "${PROJECT_SOURCE_DIR}/include"
+  )
+  target_compile_features(
+    ${header}
+    INTERFACE
+      cxx_std_23
+  )
+  target_link_libraries(
+    ${header}
+    INTERFACE
+      project_warnings
+      project_sanitizers
+  )
+endforeach()
 
 
 # ============================================================
@@ -64,6 +56,7 @@ set(
     error_code_lib
     Query_lib
     MyString_lib
+    RV32I_lib
 )
 
 foreach(lib IN LISTS ALL_LIBS)

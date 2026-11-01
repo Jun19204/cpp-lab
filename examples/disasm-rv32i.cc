@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
   }
 
   std::string file_path(argv[1]);
-  std::uint32_t pc = 0x00000000;
+  uint32_t pc = 0x00000000;
 
   auto parser = createElfParser(file_path);
   auto text_bytes = parser->extractTextSection();
@@ -36,14 +36,12 @@ int main(int argc, char** argv) {
 
   for (std::uint32_t bits : instructions) {
     auto instr = InstructionFactory::create(bits);
-    
     std::cout << "0x" << std::setw(8) << std::setfill('0') << std::hex << pc
               << "    "
               << "0x" << std::setw(8) << std::setfill('0') << std::hex << bits
               << "    " 
               << instr->disassemble(pc) << "\n";
-    
-    pc += 4; // 4바이트씩 이동
+    pc += 4;
   }
   return EXIT_SUCCESS;
 }

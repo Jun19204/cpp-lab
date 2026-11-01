@@ -2,14 +2,14 @@ include(GoogleTest)
 
 # Add test targets here.
 
-add_executable(Disasm_test Test_Disasm.cc)
-target_link_libraries(Disasm_test PRIVATE Disasm_headers)
+add_executable(disasm-rv32i_test Test_disasm-rv32i.cc)
+target_link_libraries(disasm-rv32i_test PRIVATE RV32I_lib)
 
 
 
 set(
   ALL_TESTS
-    Disasm_test
+    disasm-rv32i_test
 )
 
 foreach(test IN LISTS ALL_TESTS)

@@ -5,7 +5,7 @@ add_executable(Query_app Query-main.cc)
 add_executable(Quote_app Quote-main.cc)
 add_executable(BuilderPattern_app builder_pattern-main.cc)
 add_executable(TestTemplate_app TestTemplate-main.cc)
-add_executable(TestDisasm_app TestDisasm-main.cc)
+add_executable(disasm-rv32i disasm-rv32i.cc)
 
 # ============================================================
 # 2. Link Libraries (개별 라이브러리 및 헤더 경로 연결)
@@ -13,7 +13,7 @@ add_executable(TestDisasm_app TestDisasm-main.cc)
 target_link_libraries(Query_app PRIVATE Query_lib)
 target_link_libraries(Quote_app PRIVATE Quote_headers Basket_lib)
 target_link_libraries(TestTemplate_app PRIVATE MyTemplate_lib)
-target_link_libraries(TestDisasm_app PRIVATE Disasm_headers)
+target_link_libraries(disasm-rv32i PRIVATE RV32I_lib)
 
 # 빌더 패턴 앱이 컴파일러 인덱싱에서 누락되어 꼬이는 것을 방지하기 위해 임시 헤더 연결
 target_link_libraries(BuilderPattern_app PRIVATE MyTemplate_lib) 
@@ -27,7 +27,7 @@ set(
     Quote_app
     BuilderPattern_app
     TestTemplate_app
-    TestDisasm_app
+    disasm-rv32i
 )
 
 foreach(exe IN LISTS ALL_EXES)
