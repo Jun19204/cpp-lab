@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-// 최상위 추상 클래스
+// 인스트럭션 최상위 추상 클래스
 class Instruction {
 protected:
   uint32_t raw_bits;
@@ -16,7 +16,7 @@ public:
   virtual std::string disassemble([[maybe_unused]] uint32_t pc) const = 0;
 };
 
-// 객체 생성 팩토리 (문자열만 주입)
+// 형식별 인스트럭션 객체 생성 팩토리
 class InstructionFactory {
 public:
   static auto create(uint32_t bits) -> std::unique_ptr<Instruction>;
