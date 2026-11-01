@@ -518,6 +518,7 @@ private:
       case 0x0:
         if (funct7 == 0x00) { return std::make_unique<AddInstr>(bits); }
         if (funct7 == 0x20) { return std::make_unique<SubInstr>(bits); }
+        break;
       case 0x1: return std::make_unique<SllInstr>(bits);
       case 0x2: return std::make_unique<SltInstr>(bits);
       case 0x3: return std::make_unique<SltuInstr>(bits);
@@ -525,6 +526,7 @@ private:
       case 0x5:
         if (funct7 == 0x00) { return std::make_unique<SrlInstr>(bits); }
         if (funct7 == 0x20) { return std::make_unique<SraInstr>(bits); }
+        break;
       case 0x6: return std::make_unique<OrInstr>(bits);
       case 0x7: return std::make_unique<AndInstr>(bits);
       default: break;
@@ -557,6 +559,7 @@ private:
       case 0x5: 
         if (funct7 == 0x20) { return std::make_unique<SraiInstr>(bits); }
         if (funct7 == 0x00) { return std::make_unique<SrliInstr>(bits); }
+        break;
       case 0x6: return std::make_unique<OriInstr>(bits);
       case 0x7: return std::make_unique<AndiInstr>(bits);
       default: break;
