@@ -112,7 +112,7 @@ class UType : public Instruction {
 protected:
   uint32_t rd;
   int32_t imm;
-private:
+public:
   UType(uint32_t bits) : Instruction(bits) {
     rd = (bits >> 7) & 0x1F;
     imm = static_cast<int32_t>(bits & 0xFFFFF000);
@@ -131,7 +131,6 @@ struct AddInstr : RType {
     return cmd;
   }
 };
-
 struct SubInstr : RType {
   using RType::RType;
   [[nodiscard]]
@@ -140,21 +139,188 @@ struct SubInstr : RType {
     return cmd;
   }
 };
+struct SllInstr : RType {
+  using RType::RType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("sll   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
+  }
+};
+struct SltInstr : RType {
+  using RType::RType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("slt   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
+  }
+};
+struct SltuInstr : RType {
+  using RType::RType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("sltu   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
+  }
+};
+struct SrlInstr : RType {
+  using RType::RType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("srl   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
+  }
+};
+struct SraInstr : RType {
+  using RType::RType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("sra   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
+  }
+};
+struct XorInstr : RType {
+  using RType::RType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("xor   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
+  }
+};
+struct OrInstr : RType {
+  using RType::RType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("or   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
+  }
+};
+struct AndInstr : RType {
+  using RType::RType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("and   x{}, x{}, x{}", rd, rs1, rs2);
+    return cmd;
+  }
+};
 
 struct AddiInstr : IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::string cmd = std::format("addi   x{}, x{}, %d", rd, rs1, imm);
+    std::string cmd = std::format("addi   x{}, x{}, {}", rd, rs1, imm);
     return cmd;
   }
 };
-
+struct SlliInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("slli    x{}, x{}, {}", rd, rs1, imm);
+    return cmd;
+  }
+};
+struct SltiInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("slti    x{}, x{}, {}", rd, rs1, imm);
+    return cmd;
+  }
+};
+struct SltiuInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("sltiu    x{}, x{}, {}", rd, rs1, imm);
+    return cmd;
+  }
+};
+struct XoriInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("xori    x{}, x{}, {}", rd, rs1, imm);
+    return cmd;
+  }
+};
+struct SraiInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("srai    x{}, x{}, {}", rd, rs1, imm);
+    return cmd;
+  }
+};
+struct SrliInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("srli    x{}, x{}, {}", rd, rs1, imm);
+    return cmd;
+  }
+};
+struct OriInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("ori    x{}, x{}, {}", rd, rs1, imm);
+    return cmd;
+  }
+};
+struct AndiInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("andi    x{}, x{}, {}", rd, rs1, imm);
+    return cmd;
+  }
+};
 struct LwInstr : IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
     std::string cmd = std::format("lw    x{}, {}(x{})", rd, imm, rs1);
+    return cmd;
+  }
+};
+struct LbInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("lb    x{}, {}(x{})", rd, imm, rs1);
+    return cmd;
+  }
+};
+struct LhInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("lh    x{}, {}(x{})", rd, imm, rs1);
+    return cmd;
+  }
+};
+struct LbuInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("lbu    x{}, {}(x{})", rd, imm, rs1);
+    return cmd;
+  }
+};
+struct LhuInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("lhu    x{}, {}(x{})", rd, imm, rs1);
+    return cmd;
+  }
+};
+struct JalrInstr : IType {
+  using IType::IType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("jalr   x{}, {}(x{})", rd, imm, rs1);
     return cmd;
   }
 };
@@ -164,6 +330,22 @@ struct SwInstr : SType {
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
     std::string cmd = std::format("sw    x{}, {}(x{})", rs2, imm, rs1);
+    return cmd;
+  }
+};
+struct SbInstr : SType {
+  using SType::SType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("sb    x{}, {}(x{})", rs2, imm, rs1);
+    return cmd;
+  }
+};
+struct ShInstr : SType {
+  using SType::SType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("sh    x{}, {}(x{})", rs2, imm, rs1);
     return cmd;
   }
 };
@@ -180,7 +362,6 @@ struct BeqInstr : BType {
     return cmd;
   }
 };
-
 struct BneInstr : BType {
   using BType::BType;
   [[nodiscard]]
@@ -193,7 +374,6 @@ struct BneInstr : BType {
     return cmd;
   }
 };
-
 struct BltInstr : BType {
   using BType::BType;
   [[nodiscard]]
@@ -203,6 +383,80 @@ struct BltInstr : BType {
                    << std::hex << static_cast<int32_t>(pc) + imm;
     std::string cmd 
       = std::format("blt   x{}, x{}, {}", rs1, rs2, target_address.str());
+    return cmd;
+  }
+};
+struct BgeInstr : BType {
+  using BType::BType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::stringstream target_address;
+    target_address << "0x" << std::setw(8) << std::setfill('0') 
+                   << std::hex << static_cast<int32_t>(pc) + imm;
+    std::string cmd 
+      = std::format("bge   x{}, x{}, {}", rs1, rs2, target_address.str());
+    return cmd;
+  }
+};
+struct BltuInstr : BType {
+  using BType::BType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::stringstream target_address;
+    target_address << "0x" << std::setw(8) << std::setfill('0') 
+                   << std::hex << static_cast<int32_t>(pc) + imm;
+    std::string cmd 
+      = std::format("bltu   x{}, x{}, {}", rs1, rs2, target_address.str());
+    return cmd;
+  }
+};
+struct BgeuInstr : BType {
+  using BType::BType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::stringstream target_address;
+    target_address << "0x" << std::setw(8) << std::setfill('0') 
+                   << std::hex << static_cast<int32_t>(pc) + imm;
+    std::string cmd 
+      = std::format("bgeu   x{}, x{}, {}", rs1, rs2, target_address.str());
+    return cmd;
+  }
+};
+
+struct JalInstr : JType {
+  using JType::JType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::stringstream target_address;
+    target_address << "0x" << std::setw(8) << std::setfill('0') 
+                   << std::hex << static_cast<int32_t>(pc) + imm;
+    std::string cmd 
+      = std::format("jal   x{}, {}", rd, target_address.str());
+    return cmd;
+  }
+};
+
+struct LuiInstr : UType {
+  using UType::UType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::stringstream extended_address;
+    extended_address << "0x" << std::setw(8) << std::setfill('0') 
+                   << std::hex << imm;
+    std::string cmd 
+      = std::format("lui   x{}, {}", rd, extended_address.str());
+    return cmd;
+  }
+};
+struct AuipcInstr : UType {
+  using UType::UType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::stringstream target_address;
+    target_address << "0x" << std::setw(8) << std::setfill('0') 
+                   << std::hex << static_cast<int32_t>(pc) + imm;
+    std::string cmd 
+      = std::format("auipc   x{}, {}", rd, target_address.str());
     return cmd;
   }
 };
@@ -264,15 +518,15 @@ private:
       case 0x0:
         if (funct7 == 0x00) { return std::make_unique<AddInstr>(bits); }
         if (funct7 == 0x20) { return std::make_unique<SubInstr>(bits); }
-      case 0x1: //return std::make_unique<SllInstr>(bits);
-      case 0x2: //return std::make_unique<SltInstr>(bits);
-      case 0x3: //return std::make_unique<SltuInstr>(bits);
-      case 0x4: //return std::make_unique<XorInstr>(bits);
+      case 0x1: return std::make_unique<SllInstr>(bits);
+      case 0x2: return std::make_unique<SltInstr>(bits);
+      case 0x3: return std::make_unique<SltuInstr>(bits);
+      case 0x4: return std::make_unique<XorInstr>(bits);
       case 0x5:
-        //if (funct7 == 0x00) { //return std::make_unique<SrlInstr>(bits); }
-        //if (funct7 == 0x20) { //return std::make_unique<SraInstr>(bits); }
-      case 0x6: //return std::make_unique<OrInstr>(bits);
-      case 0x7: //return std::make_unique<AndInstr>(bits);
+        if (funct7 == 0x00) { return std::make_unique<SrlInstr>(bits); }
+        if (funct7 == 0x20) { return std::make_unique<SraInstr>(bits); }
+      case 0x6: return std::make_unique<OrInstr>(bits);
+      case 0x7: return std::make_unique<AndInstr>(bits);
       default: break;
     }
     return std::make_unique<UnknownInstr>(bits);
@@ -281,11 +535,11 @@ private:
   static std::unique_ptr<Instruction> createITypeLoad(uint32_t bits) {
     uint32_t funct3 = (bits >> 12) & 0x07;
     switch (funct3) {
-      case 0x0: //return std::make_unique<LbInstr>(bits);
-      case 0x1: //return std::make_unique<LhInstr>(bits);
+      case 0x0: return std::make_unique<LbInstr>(bits);
+      case 0x1: return std::make_unique<LhInstr>(bits);
       case 0x2: return std::make_unique<LwInstr>(bits);
-      case 0x4: //return std::make_unique<LbuInstr>(bits);
-      case 0x5: //return std::make_unique<LhuInstr>(bits);
+      case 0x4: return std::make_unique<LbuInstr>(bits);
+      case 0x5: return std::make_unique<LhuInstr>(bits);
       default: break;
     }
     return std::make_unique<UnknownInstr>(bits);
@@ -296,15 +550,15 @@ private:
     uint32_t funct7 = (bits >> 25) & 0x7f;
     switch (funct3) {
       case 0x0: return std::make_unique<AddiInstr>(bits);
-      case 0x1: //return std::make_unique<SlliInstr>(bits);
-      case 0x2: //return std::make_unique<SltiInstr>(bits);
-      case 0x3: //return std::make_unique<SltiuInstr>(bits);
-      case 0x4: //return std::make_unique<XoriInstr>(bits);
+      case 0x1: return std::make_unique<SlliInstr>(bits);
+      case 0x2: return std::make_unique<SltiInstr>(bits);
+      case 0x3: return std::make_unique<SltiuInstr>(bits);
+      case 0x4: return std::make_unique<XoriInstr>(bits);
       case 0x5: 
-        //if (funct7 == 0x20) { return std::make_unique<SraiInstr>(bits); }
-        //if (funct7 == 0x00) { return std::make_unique<SrliInstr>(bits); }
-      case 0x6: //return std::make_unique<OriInstr>(bits);
-      case 0x7: //return std::make_unique<Andi>(bits);
+        if (funct7 == 0x20) { return std::make_unique<SraiInstr>(bits); }
+        if (funct7 == 0x00) { return std::make_unique<SrliInstr>(bits); }
+      case 0x6: return std::make_unique<OriInstr>(bits);
+      case 0x7: return std::make_unique<AndiInstr>(bits);
       default: break;
     }
     return std::make_unique<UnknownInstr>(bits);
@@ -313,7 +567,7 @@ private:
   static std::unique_ptr<Instruction> createITypeJump(uint32_t bits) {
     uint32_t funct3 = (bits >> 12) & 0x07;
     switch (funct3) {
-      case 0x0: //return std::make_unique<JalrInstr>(bits);
+      case 0x0: return std::make_unique<JalrInstr>(bits);
       default: break;
     }
     return std::make_unique<UnknownInstr>(bits);
@@ -322,8 +576,8 @@ private:
   static std::unique_ptr<Instruction> createSType(uint32_t bits) {
     uint32_t funct3 = (bits >> 12) & 0x07;
     switch (funct3) {
-      case 0x0: //return std::make_unique<SbInstr>(bits);
-      case 0x1: //return std::make_unique<ShInstr>(bits);
+      case 0x0: return std::make_unique<SbInstr>(bits);
+      case 0x1: return std::make_unique<ShInstr>(bits);
       case 0x2: return std::make_unique<SwInstr>(bits);
       default: break;
     }
@@ -336,28 +590,27 @@ private:
       case 0x0: return std::make_unique<BeqInstr>(bits);
       case 0x1: return std::make_unique<BneInstr>(bits);
       case 0x4: return std::make_unique<BltInstr>(bits);
-      case 0x5: //return std::make_unique<BgeInstr>(bits);
-      case 0x6: //return std::make_unique<BltuInstr>(bits);
-      case 0x7: //return std::make_unique<BgeuInstr>(bits);
+      case 0x5: return std::make_unique<BgeInstr>(bits);
+      case 0x6: return std::make_unique<BltuInstr>(bits);
+      case 0x7: return std::make_unique<BgeuInstr>(bits);
       default: break;
     }
     return std::make_unique<UnknownInstr>(bits);
   }
 
   static std::unique_ptr<Instruction> createJType(uint32_t bits) {
-    //return std::make_unique<JalInstr>(bits);
+    return std::make_unique<JalInstr>(bits);
   }
 
   static std::unique_ptr<Instruction> createUType(uint32_t bits) {
     uint32_t opcode = bits & 0x7f;
     switch (opcode) {
-      case 0x37: //return std::make_unique<LuiInstr>(bits);
-      case 0x17: //return std::make_unique<AuipcInstr>(bits);
+      case 0x37: return std::make_unique<LuiInstr>(bits);
+      case 0x17: return std::make_unique<AuipcInstr>(bits);
       default: break;
     }
     return std::make_unique<UnknownInstr>(bits);
   }
- 
 };
 
 #endif
