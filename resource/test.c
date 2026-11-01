@@ -1,11 +1,11 @@
 int sum(int arr[], int n) {
-  int sum = 0;
-  int* begin = arr;
+  int total = 0;
+  int* iter = arr;
   int* end = arr + n;
-  for (; begin != end; ++begin) {
-    sum += *begin;
+  for (; iter != end; ++iter) {
+    total += *iter;
   }
-  return sum;
+  return total;
 }
 
 int main(void) {
