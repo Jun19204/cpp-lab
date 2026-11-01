@@ -1,5 +1,5 @@
 #include "disasm/TestParser.h"
-#include "disasm/rv32i.h"
+#include "disasm/RV32I.h"
 #include "gtest/gtest.h"
 
 #include <cstdint>
@@ -28,7 +28,10 @@ TEST(DisasmIntegrationTest, DumpTestBinary) {
     instructions.push_back(inst);
   }
 
-  std::cout << "\n[Disassembly Output for Verification]\n";
+  std::cout << "디스어셈블리 결과 검증 테스트\n";
+  std::cout << "디스어셈블 대상 파일: " << file_path << '\n';
+  std::cout << "-----------------------------------------------------\n";
+  std::cout << " PC 주소     바이너리 코드     디스어셈블 결과\n";
   std::cout << "-----------------------------------------------------\n";
   for (std::uint32_t bits : instructions) {
     auto instr = InstructionFactory::create(bits);
