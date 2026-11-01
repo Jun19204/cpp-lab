@@ -52,6 +52,19 @@ public:
   }
 };
 
+class ShiftIType : public Instruction {
+protected:
+  uint32_t rd, funct3, rs1, funct7, shamt;
+public:
+  ShiftIType(uint32_t bits) : Instruction(bits) {
+    rd     = (bits >> 7) & 0x1F;
+    funct3 = (bits >> 12) & 0x07;
+    rs1    = (bits >> 15) & 0x1F;
+    shamt  = (bits >> 20) & 0x1F;
+    funct7 = (bits >> 25) & 0x7F;
+  }
+};
+
 class SType : public Instruction {
 protected:
   uint32_t funct3, rs1, rs2;
@@ -212,14 +225,6 @@ struct AddiInstr : IType {
     return cmd;
   }
 };
-struct SlliInstr : IType {
-  using IType::IType;
-  [[nodiscard]]
-  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::string cmd = std::format("slli    x{}, x{}, {}", rd, rs1, imm);
-    return cmd;
-  }
-};
 struct SltiInstr : IType {
   using IType::IType;
   [[nodiscard]]
@@ -241,22 +246,6 @@ struct XoriInstr : IType {
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
     std::string cmd = std::format("xori    x{}, x{}, {}", rd, rs1, imm);
-    return cmd;
-  }
-};
-struct SraiInstr : IType {
-  using IType::IType;
-  [[nodiscard]]
-  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::string cmd = std::format("srai    x{}, x{}, {}", rd, rs1, imm);
-    return cmd;
-  }
-};
-struct SrliInstr : IType {
-  using IType::IType;
-  [[nodiscard]]
-  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
-    std::string cmd = std::format("srli    x{}, x{}, {}", rd, rs1, imm);
     return cmd;
   }
 };
@@ -321,6 +310,30 @@ struct JalrInstr : IType {
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
     std::string cmd = std::format("jalr   x{}, {}(x{})", rd, imm, rs1);
+    return cmd;
+  }
+};
+struct SraiInstr : ShiftIType {
+  using ShiftIType::ShiftIType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("srai    x{}, x{}, {}", rd, rs1, shamt);
+    return cmd;
+  }
+};
+struct SrliInstr : ShiftIType {
+  using ShiftIType::ShiftIType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("srli    x{}, x{}, {}", rd, rs1, shamt);
+    return cmd;
+  }
+};
+struct SlliInstr : ShiftIType {
+  using ShiftIType::ShiftIType;
+  [[nodiscard]]
+  std::string disassemble([[maybe_unused]] uint32_t pc) const override {
+    std::string cmd = std::format("slli    x{}, x{}, {}", rd, rs1, shamt);
     return cmd;
   }
 };
