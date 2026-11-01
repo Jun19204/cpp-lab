@@ -1,5 +1,5 @@
 #include "disasm/rv32i.h"
-#include "disasm/parser.h"
+#include "disasm/ElfParser.h"
 
 #include <cstdlib>
 #include <cstdint>
