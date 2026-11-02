@@ -11,15 +11,17 @@
 #include <string_view>
 #include <vector>
 
+
+// ============================================================================
+// 1. ELF 파서 공통 인터페이스
+// ============================================================================
+
 /**
- * @brief ELF 파서 공통 인터페이스
- * 팩토리 패턴을 통해 생성된 객체를 다형적으로 다루기 위한 추상 베이스
- * 클래스이다.
+ * 팩토리 패턴을 통해 생성된 객체를 다형적으로 다루기 위한 추상 베이스 클래스
  */
 class IElfParser {
 public:
   virtual ~IElfParser() = default;
-
   /**
    * @brief 실행 코드 영역(.text 또는 실행 가능한 PT_LOAD 세그먼트)을
    * 추출한다.
@@ -27,6 +29,7 @@ public:
    */
   virtual auto extractTextSection() -> std::vector<uint8_t> = 0;
 };
+
 
 // ============================================================================
 // 2. 32비트 / 64비트 트레이츠 (시스템 표준 ELF 구조체 매핑)
@@ -44,6 +47,7 @@ struct ELF64Traits {
   using Phdr = Elf64_Phdr;
   static constexpr uint8_t kExpectedClass = ELFCLASS64;
 };
+
 
 // ============================================================================
 // 3. 구체적인 템플릿 파서 클래스 (정적 다형성 활용)
@@ -114,6 +118,7 @@ private:
   auto parseRelocatableText() -> std::vector<uint8_t>;
   auto parseExecutableText() -> std::vector<uint8_t>;
 };
+
 
 // 목적 파일(.o)의 섹션 헤더 테이블을 순회하여 .text 섹션 추출
 template <typename Traits>
@@ -192,15 +197,26 @@ auto ElfParser<Traits>::parseRelocatableText() -> std::vector<uint8_t> {
   throw std::runtime_error("목적 파일에서 .text 섹션을 찾을 수 없습니다.");
 }
 
-// 실행 파일/공유 라이브러리의 프로그램 헤더를 순회하여 실행 가능한 세그먼트
-// 추출
+
+// 실행 파일/공유 라이브러리의 프로그램 헤더 및 진입점을 활용한 하이브리드 추출
 template <typename Traits>
 auto ElfParser<Traits>::parseExecutableText() -> std::vector<uint8_t> {
+  // 실행 파일이라도 섹션 헤더 테이블이 살아있다면 .text 섹션 우선 탐색
+  if (ehdr_.e_shoff != 0 && ehdr_.e_shnum != 0 && ehdr_.e_shstrndx != SHN_UNDEF) {
+    try {
+      return parseRelocatableText();
+    } catch (...) {
+      static_cast<void>(0);
+      // 섹션 기반 탐색 중 예외가 발생하면 세그먼트 폴백으로 안전하게 진입
+    }
+  }
+
+  // 세그먼트 폴백
+  // 섹션 헤더가 없는 완전한 Stripped 바이너리 대응 (PT_LOAD + e_entry 폴백)
   using Phdr = typename Traits::Phdr;
 
   if (ehdr_.e_phoff == 0 || ehdr_.e_phnum == 0) {
-    throw std::runtime_error("실행 파일/공유 라이브러리에 프로그램 헤더 "
-                             "테이블이 존재하지 않습니다.");
+    throw std::runtime_error("실행 파일에 프로그램 헤더 테이블이 존재하지 않습니다.");
   }
 
   size_t ph_table_size = static_cast<size_t>(ehdr_.e_phnum) * ehdr_.e_phentsize;
@@ -208,7 +224,6 @@ auto ElfParser<Traits>::parseExecutableText() -> std::vector<uint8_t> {
     throw std::runtime_error("프로그램 헤더 테이블이 파일 범위를 벗어납니다.");
   }
 
-  // 로드 가능하고 실행 권한이 있는 세그먼트(PT_LOAD + PF_X) 탐색
   for (size_t i = 0; i < ehdr_.e_phnum; ++i) {
     auto phdr_offset = ehdr_.e_phoff + (i * ehdr_.e_phentsize);
     file_.seekg(static_cast<std::streamoff>(phdr_offset), std::ios::beg);
@@ -217,28 +232,39 @@ auto ElfParser<Traits>::parseExecutableText() -> std::vector<uint8_t> {
     file_.read(reinterpret_cast<char *>(&phdr),
                static_cast<std::streamsize>(sizeof(Phdr)));
     
+    // 실행 가능한 PT_LOAD 세그먼트 탐색
     if (phdr.p_type == PT_LOAD && (phdr.p_flags & PF_X)) {
       if (phdr.p_filesz == 0) {
         continue;
       }
       
-      if (phdr.p_offset + phdr.p_filesz > file_size_) {
-        throw std::runtime_error(
-            "실행 가능한 세그먼트가 파일 범위를 벗어납니다.");
+      // 진입점(e_entry)이 이 세그먼트의 메모리 범위 내에 속하는지 검증
+      if (ehdr_.e_entry >= phdr.p_vaddr && 
+          ehdr_.e_entry < (phdr.p_vaddr + phdr.p_filesz)) {
+        
+        // 핵심 수식: 진입점을 기준으로 실제 코드 시작 파일 오프셋 역산
+        auto code_file_offset = phdr.p_offset + (ehdr_.e_entry - phdr.p_vaddr);
+        
+        if (code_file_offset + (phdr.p_filesz - (code_file_offset - phdr.p_offset)) > file_size_) {
+          throw std::runtime_error("역산된 코드 영역이 파일 범위를 벗어납니다.");
+        }
+        
+        // 헤더가 밀려 들어오는 부분을 제외하고 순수 코드 크기 산정
+        size_t code_size = (phdr.p_offset + phdr.p_filesz) - code_file_offset;
+        
+        std::vector<uint8_t> text_bytes(code_size);
+        file_.seekg(static_cast<std::streamoff>(code_file_offset), std::ios::beg);
+        file_.read(reinterpret_cast<char *>(text_bytes.data()),
+                   static_cast<std::streamsize>(code_size));
+        
+        return text_bytes;
       }
-      
-      std::vector<uint8_t> text_bytes(static_cast<size_t>(phdr.p_filesz));
-      file_.seekg(static_cast<std::streamoff>(phdr.p_offset), std::ios::beg);
-      file_.read(reinterpret_cast<char *>(text_bytes.data()),
-                 static_cast<std::streamsize>(phdr.p_filesz));
-      
-      return text_bytes;
     }
   }
 
-  throw std::runtime_error(
-      "실행 가능한 세그먼트(PT_LOAD + PF_X)를 찾을 수 없습니다.");
+  throw std::runtime_error("실행 가능한 세그먼트에서 유효한 진입점(e_entry)을 찾을 수 없습니다.");
 }
+
 
 // ============================================================================
 // 4. 팩토리 함수 (런타임 다형성 진입점)
