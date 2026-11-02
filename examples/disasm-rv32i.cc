@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     });
     
     pos += instr_len;
-    pc += instr_len;
+    pc += static_cast<uint32_t>(instr_len);
   }
 
   // 디스어셈블 결과 출력
