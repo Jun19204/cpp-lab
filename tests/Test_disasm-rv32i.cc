@@ -10,7 +10,7 @@
 #include <vector>
 
 TEST(DisasmIntegrationTest, DumpTestBinary) {
-  std::uint32_t pc = 0x00000000;
+  uint32_t pc = 0x00000000;
   std::string file_path = "/home/junyong/cpp-lab/resource/test.bin";
 
   ASSERT_TRUE(std::filesystem::exists(file_path))
@@ -31,7 +31,7 @@ TEST(DisasmIntegrationTest, DumpTestBinary) {
               << "    "
               << "0x" << std::setw(8) << std::setfill('0') << std::hex << bits
               << "    " << instr->disassemble(pc) << "\n";
-    pc += 4;
+    pc += (bits & 0x3) == 0x3 ? 4 : 2;
   }
 
   SUCCEED();
