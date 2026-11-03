@@ -19,12 +19,8 @@ struct DecodedInstruction {
 }
 
 int main(int argc, char **argv) {
-  if (argc <= 1) {
-    std::cerr << "파일 경로를 입력하셔야 합니다.\n";
-    return EXIT_FAILURE;
-  }
-  if (argc > 2) {
-    std::cerr << "하나의 파일 경로만 입력 가능합니다.\n";
+  if (argc != 2) {
+    std::cerr << "usage : disasm-rv32i <file_path>\n";
     return EXIT_FAILURE;
   }
 
