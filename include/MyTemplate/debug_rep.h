@@ -33,11 +33,17 @@ auto debug_rep(const std::string& s) -> std::string { return '"' + s + '"'; }
 
 /* const char* 전용 비템플릿 함수 */
 auto debug_rep(const char *ptr) -> std::string {
+  if (ptr == nullptr) {
+    return "pointer: null pointer";
+  }
   return debug_rep<const char>(ptr) + " " + debug_rep(std::string(ptr));
 }
 
 /* char* 전용 비템플릿 함수 */
 auto debug_rep(char *ptr) -> std::string {
+  if (ptr == nullptr) {
+    return "pointer: null pointer";
+  }
   return debug_rep<char>(ptr) + " " + debug_rep(std::string(ptr));
 }
 
