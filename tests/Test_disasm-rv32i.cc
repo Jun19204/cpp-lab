@@ -34,6 +34,10 @@ TEST(DisasmIntegrationTest, DumpTestBinary) {
     pc += (bits & 0x3) == 0x3 ? 4 : 2;
   }
 
+  auto instr = InstructionFactory::create((uint32_t)0x00c6ba23);
+  std::cout << instr->disassemble(pc) << '\n';
+
+
   SUCCEED();
 }
 
