@@ -1,5 +1,6 @@
 #include "disasm/RV32I.h"
 
+#include <cstdint>
 #include <memory>
 #include <format>
 
@@ -204,7 +205,6 @@ enum class Opcode : uint8_t {
 };
 
 }
-
 
 auto InstructionFactory::create(uint32_t bits) 
 -> std::unique_ptr<Instruction> {
