@@ -27,8 +27,6 @@ public:
 // 포멧별 Intermediate 클래스
 //
 class RType : public Instruction {
-protected:
-  uint32_t rd, funct3, rs1, rs2, funct7;
 public:
   RType(uint32_t bits) : Instruction(bits) {
     rd = (bits >> 7) & 0x1F;
@@ -37,12 +35,11 @@ public:
     rs2 = (bits >> 20) & 0x1F;
     funct7 = (bits >> 25) & 0x7F;
   }
+protected:
+  uint32_t rd, funct3, rs1, rs2, funct7;
 };
 
 class IType : public Instruction {
-protected:
-  uint32_t rd, funct3, rs1;
-  int32_t imm;
 public:
   IType(uint32_t bits) : Instruction(bits) {
     rd = (bits >> 7) & 0x1F;
@@ -50,11 +47,12 @@ public:
     rs1 = (bits >> 15) & 0x1F;
     imm = static_cast<int32_t>(bits) >> 20;
   }
+protected:
+  uint32_t rd, funct3, rs1;
+  int32_t imm;
 };
 
 class ShiftIType : public Instruction {
-protected:
-  uint32_t rd, funct3, rs1, funct7, shamt;
 public:
   ShiftIType(uint32_t bits) : Instruction(bits) {
     rd     = (bits >> 7) & 0x1F;
@@ -63,12 +61,11 @@ public:
     shamt  = (bits >> 20) & 0x1F;
     funct7 = (bits >> 25) & 0x7F;
   }
+protected:
+  uint32_t rd, funct3, rs1, funct7, shamt;
 };
 
 class SType : public Instruction {
-protected:
-  uint32_t funct3, rs1, rs2;
-  int32_t imm;
 public:
   SType(uint32_t bits) : Instruction(bits) {
     funct3 = (bits >> 12) & 0x07;
@@ -79,12 +76,12 @@ public:
     uint32_t raw_imm = (imm11_5 << 5) | imm4_0;
     imm = static_cast<int32_t>(raw_imm << 20) >> 20;
   }
-};
-
-class BType : public Instruction {
 protected:
   uint32_t funct3, rs1, rs2;
   int32_t imm;
+};
+
+class BType : public Instruction {
 public:
   BType(uint32_t bits) : Instruction(bits) {
     funct3 = (bits >> 12) & 0x07;
@@ -100,12 +97,12 @@ public:
                     | (imm4_1  << 1);
     imm = static_cast<int32_t>(raw_imm << 19) >> 19;
   }
+protected:
+  uint32_t funct3, rs1, rs2;
+  int32_t imm;
 };
 
 class JType : public Instruction {
-protected:
-  uint32_t rd;
-  int32_t imm;
 public:
   JType(uint32_t bits) : Instruction(bits) {
     rd = (bits >> 7) & 0x1F;
@@ -119,24 +116,27 @@ public:
                        | (bits30_21 << 1);
     imm = static_cast<int32_t>(assembled << 11) >> 11;
   }
-};
-
-class UType : public Instruction {
 protected:
   uint32_t rd;
   int32_t imm;
+};
+
+class UType : public Instruction {
 public:
   UType(uint32_t bits) : Instruction(bits) {
     rd = (bits >> 7) & 0x1F;
     imm = static_cast<int32_t>(bits & 0xFFFFF000);
   }
+protected:
+  uint32_t rd;
+  int32_t imm;
 };
 
 
 // 
 // 구체적인 명령어
 //
-struct AddInstr : RType {
+class  AddInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -144,7 +144,7 @@ struct AddInstr : RType {
     return cmd;
   }
 };
-struct SubInstr : RType {
+class SubInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -152,7 +152,7 @@ struct SubInstr : RType {
     return cmd;
   }
 };
-struct SllInstr : RType {
+class SllInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -160,7 +160,7 @@ struct SllInstr : RType {
     return cmd;
   }
 };
-struct SltInstr : RType {
+class SltInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -168,7 +168,7 @@ struct SltInstr : RType {
     return cmd;
   }
 };
-struct SltuInstr : RType {
+class SltuInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -176,7 +176,7 @@ struct SltuInstr : RType {
     return cmd;
   }
 };
-struct SrlInstr : RType {
+class SrlInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -184,7 +184,7 @@ struct SrlInstr : RType {
     return cmd;
   }
 };
-struct SraInstr : RType {
+class SraInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -192,7 +192,7 @@ struct SraInstr : RType {
     return cmd;
   }
 };
-struct XorInstr : RType {
+class XorInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -200,7 +200,7 @@ struct XorInstr : RType {
     return cmd;
   }
 };
-struct OrInstr : RType {
+class OrInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -208,7 +208,7 @@ struct OrInstr : RType {
     return cmd;
   }
 };
-struct AndInstr : RType {
+class AndInstr : public RType {
   using RType::RType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -216,8 +216,7 @@ struct AndInstr : RType {
     return cmd;
   }
 };
-
-struct AddiInstr : IType {
+class AddiInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -225,7 +224,7 @@ struct AddiInstr : IType {
     return cmd;
   }
 };
-struct SltiInstr : IType {
+class SltiInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -233,7 +232,7 @@ struct SltiInstr : IType {
     return cmd;
   }
 };
-struct SltiuInstr : IType {
+class SltiuInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -241,7 +240,7 @@ struct SltiuInstr : IType {
     return cmd;
   }
 };
-struct XoriInstr : IType {
+class XoriInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -249,7 +248,7 @@ struct XoriInstr : IType {
     return cmd;
   }
 };
-struct OriInstr : IType {
+class OriInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -257,7 +256,7 @@ struct OriInstr : IType {
     return cmd;
   }
 };
-struct AndiInstr : IType {
+class AndiInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -265,7 +264,7 @@ struct AndiInstr : IType {
     return cmd;
   }
 };
-struct LwInstr : IType {
+class LwInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -273,7 +272,7 @@ struct LwInstr : IType {
     return cmd;
   }
 };
-struct LbInstr : IType {
+class LbInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -281,7 +280,7 @@ struct LbInstr : IType {
     return cmd;
   }
 };
-struct LhInstr : IType {
+class LhInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -289,7 +288,7 @@ struct LhInstr : IType {
     return cmd;
   }
 };
-struct LbuInstr : IType {
+class LbuInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -297,7 +296,7 @@ struct LbuInstr : IType {
     return cmd;
   }
 };
-struct LhuInstr : IType {
+class LhuInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -305,7 +304,7 @@ struct LhuInstr : IType {
     return cmd;
   }
 };
-struct JalrInstr : IType {
+class JalrInstr : public IType {
   using IType::IType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -313,7 +312,7 @@ struct JalrInstr : IType {
     return cmd;
   }
 };
-struct SraiInstr : ShiftIType {
+class SraiInstr : public ShiftIType {
   using ShiftIType::ShiftIType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -321,7 +320,7 @@ struct SraiInstr : ShiftIType {
     return cmd;
   }
 };
-struct SrliInstr : ShiftIType {
+class SrliInstr : public ShiftIType {
   using ShiftIType::ShiftIType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -329,7 +328,7 @@ struct SrliInstr : ShiftIType {
     return cmd;
   }
 };
-struct SlliInstr : ShiftIType {
+class SlliInstr : public ShiftIType {
   using ShiftIType::ShiftIType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -338,7 +337,7 @@ struct SlliInstr : ShiftIType {
   }
 };
 
-struct SwInstr : SType {
+class SwInstr : public SType {
   using SType::SType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -346,7 +345,7 @@ struct SwInstr : SType {
     return cmd;
   }
 };
-struct SbInstr : SType {
+class SbInstr : public SType {
   using SType::SType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -354,7 +353,7 @@ struct SbInstr : SType {
     return cmd;
   }
 };
-struct ShInstr : SType {
+class ShInstr : public SType {
   using SType::SType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -363,7 +362,7 @@ struct ShInstr : SType {
   }
 };
 
-struct BeqInstr : BType {
+class BeqInstr : public BType {
   using BType::BType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -375,7 +374,7 @@ struct BeqInstr : BType {
     return cmd;
   }
 };
-struct BneInstr : BType {
+class BneInstr : public BType {
   using BType::BType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -387,7 +386,7 @@ struct BneInstr : BType {
     return cmd;
   }
 };
-struct BltInstr : BType {
+class BltInstr : public BType {
   using BType::BType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -399,7 +398,7 @@ struct BltInstr : BType {
     return cmd;
   }
 };
-struct BgeInstr : BType {
+class BgeInstr : public BType {
   using BType::BType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -411,7 +410,7 @@ struct BgeInstr : BType {
     return cmd;
   }
 };
-struct BltuInstr : BType {
+class BltuInstr : public BType {
   using BType::BType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -423,7 +422,7 @@ struct BltuInstr : BType {
     return cmd;
   }
 };
-struct BgeuInstr : BType {
+class BgeuInstr : public BType {
   using BType::BType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -436,7 +435,7 @@ struct BgeuInstr : BType {
   }
 };
 
-struct JalInstr : JType {
+class JalInstr : public JType {
   using JType::JType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -449,7 +448,7 @@ struct JalInstr : JType {
   }
 };
 
-struct LuiInstr : UType {
+class LuiInstr : public UType {
   using UType::UType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -461,7 +460,7 @@ struct LuiInstr : UType {
     return cmd;
   }
 };
-struct AuipcInstr : UType {
+class AuipcInstr : public UType {
   using UType::UType;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {
@@ -474,7 +473,7 @@ struct AuipcInstr : UType {
   }
 };
 
-struct UnknownInstr : Instruction {
+class UnknownInstr : public Instruction {
   using Instruction::Instruction;
   [[nodiscard]]
   std::string disassemble([[maybe_unused]] uint32_t pc) const override {

@@ -17,18 +17,18 @@ public:
 };
 
 // 형식별 인스트럭션 객체 생성 팩토리
-class InstructionFactory {
+class InstructionDecoder {
 public:
-  static auto create(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decode(uint32_t bits) -> std::unique_ptr<Instruction>;
 private:
-  static auto createRType(uint32_t bits) -> std::unique_ptr<Instruction>;
-  static auto createITypeLoad(uint32_t bits) -> std::unique_ptr<Instruction>; 
-  static auto createITypeArith(uint32_t bits) -> std::unique_ptr<Instruction>;
-  static auto createITypeJump(uint32_t bits) -> std::unique_ptr<Instruction>;
-  static auto createSType(uint32_t bits) -> std::unique_ptr<Instruction>;
-  static auto createBType(uint32_t bits) -> std::unique_ptr<Instruction>;
-  static auto createJType(uint32_t bits) -> std::unique_ptr<Instruction>;
-  static auto createUType(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decodeRType(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decodeITypeLoad(uint32_t bits) -> std::unique_ptr<Instruction>; 
+  static auto decodeITypeArith(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decodeITypeJump(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decodeSType(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decodeBType(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decodeJType(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decodeUType(uint32_t bits) -> std::unique_ptr<Instruction>;
  };
 
 
