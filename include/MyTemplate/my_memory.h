@@ -154,7 +154,13 @@ my_shared_ptr<T>::~my_shared_ptr() {
   release();
 }
 
-/* make_shared */
+/* make_shared 
+ * 지금은 논리와 작동에는 전혀 오류가 없는 상태이다.
+ * 하지만 현재 객체T와 참조 카운트가 각각 따로 동적메모리 할당이 되고있다.
+ * 즉, 객체의 메모리와 그 객체의 참조 카운트 메모리가 서로 떨어져 있게된다.
+ * 제어블록(참조횟수)과 실제 객체를 연속된 메모리로.. 
+ * 즉, 단일 메모리 블록으로 한번에 할당하는 방식으로 추후 업그레이드가 필요하다.
+ */
 template <typename T, typename... Args>
 auto make_my_shared(Args&&... args) -> my_shared_ptr<T> {
   return my_shared_ptr<T>(new T(std::forward<Args>(args)...));
