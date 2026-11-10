@@ -154,7 +154,11 @@ my_shared_ptr<T>::~my_shared_ptr() {
   release();
 }
 
-
+/* make_shared */
+template <typename T, typename... Args>
+auto make_my_shared(Args&&... args) -> my_shared_ptr<T> {
+  return my_shared_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 /* 
  * 유사 unique_ptr 클래스
