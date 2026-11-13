@@ -1,6 +1,5 @@
-#include "disasm/RV32I.h"
+#include "decoder/rv32i.h"
 
-#include <cstdint>
 #include <memory>
 #include <format>
 
@@ -11,182 +10,189 @@ namespace {
 class RInstruction : public Instruction {
 public:
   RInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic(std::move(mne)) {
-    rd     = (bits >> 7) & 0x1F;
-    rs1    = (bits >> 15) & 0x1F;
-    rs2    = (bits >> 20) & 0x1F;
+    : Instruction(bits), mnemonic_(std::move(mne)) {
+    rd_     = (bits >> 7) & 0x1F;
+    rs1_    = (bits >> 15) & 0x1F;
+    rs2_    = (bits >> 20) & 0x1F;
   }
   [[nodiscard]]
-  auto disassemble([[maybe_unused]] uint32_t pc) const
+  auto disassemble([[maybe_unused]] uint32_t pc) const 
   -> std::string override {
-    return std::format("{:<7} x{}, x{}, x{}", mnemonic, rd, rs1, rs2);
+    return std::format("{:<7} x{}, x{}, x{}", 
+                       mnemonic_, rd_, rs1_, rs2_);
   }
 protected:
-  std::string mnemonic;
-  uint32_t rd, rs1, rs2;
+  std::string mnemonic_;
+  uint32_t rd_, rs1_, rs2_;
 };
 
 // I-Type 산술/논리 (rd, rs1, imm)
 class ArithIInstruction : public Instruction {
 public:
   ArithIInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic(std::move(mne)) {
-    rd  = (bits >> 7) & 0x1F;
-    rs1 = (bits >> 15) & 0x1F;
-    imm = static_cast<int32_t>(bits) >> 20;
+    : Instruction(bits), mnemonic_(std::move(mne)) {
+    rd_  = (bits >> 7) & 0x1F;
+    rs1_ = (bits >> 15) & 0x1F;
+    imm_ = static_cast<int32_t>(bits) >> 20;
   }
   [[nodiscard]]
   auto disassemble([[maybe_unused]] uint32_t pc) const
   -> std::string override {
-    return std::format("{:<7} x{}, x{}, {}", mnemonic, rd, rs1, imm);
+    return std::format("{:<7} x{}, x{}, {}", 
+                       mnemonic_, rd_, rs1_, imm_);
   }
 protected:
-  std::string mnemonic;
-  uint32_t rd, rs1;
-  int32_t imm;
+  std::string mnemonic_;
+  uint32_t rd_, rs1_;
+  int32_t imm_;
 };
 
 // I-Type 시프트 (rd, rs1, shamt)
 class ShiftIInstruction : public Instruction {
 public:
   ShiftIInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic(std::move(mne)) {
-    rd    = (bits >> 7) & 0x1F;
-    rs1   = (bits >> 15) & 0x1F;
-    shamt = (bits >> 20) & 0x1F;
+    : Instruction(bits), mnemonic_(std::move(mne)) {
+    rd_    = (bits >> 7) & 0x1F;
+    rs1_   = (bits >> 15) & 0x1F;
+    shamt_ = (bits >> 20) & 0x1F;
   }
   [[nodiscard]]
-  auto disassemble([[maybe_unused]] uint32_t pc) const
+  auto disassemble([[maybe_unused]] uint32_t pc) const 
   -> std::string override {
-    return std::format("{:<7} x{}, x{}, {}", mnemonic, rd, rs1, shamt);
+    return std::format("{:<7} x{}, x{}, {}", 
+                       mnemonic_, rd_, rs1_, shamt_);
   }
 protected:
-  std::string mnemonic;
-  uint32_t rd, rs1, shamt;
+  std::string mnemonic_;
+  uint32_t rd_, rs1_, shamt_;
 };
 
 // I-Type Load 및 Jalr (rd, imm(rs1))
 class LoadJalrInstruction : public Instruction {
 public:
   LoadJalrInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic(std::move(mne)) {
-    rd  = (bits >> 7) & 0x1F;
-    rs1 = (bits >> 15) & 0x1F;
-    imm = static_cast<int32_t>(bits) >> 20;
+    : Instruction(bits), mnemonic_(std::move(mne)) {
+    rd_  = (bits >> 7) & 0x1F;
+    rs1_ = (bits >> 15) & 0x1F;
+    imm_ = static_cast<int32_t>(bits) >> 20;
   }
   [[nodiscard]]
-  auto disassemble([[maybe_unused]] uint32_t pc) const
+  auto disassemble([[maybe_unused]] uint32_t pc) const 
   -> std::string override {
-    return std::format("{:<7} x{}, {}(x{})", mnemonic, rd, imm, rs1);
+    return std::format("{:<7} x{}, {}(x{})", 
+                       mnemonic_, rd_, imm_, rs1_);
   }
 protected:
-  std::string mnemonic;
-  uint32_t rd, rs1;
-  int32_t imm;
+  std::string mnemonic_;
+  uint32_t rd_, rs1_;
+  int32_t imm_;
 };
 
 // S-Type (rs2, imm(rs1))
 class SInstruction : public Instruction {
 public:
   SInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic(std::move(mne)) {
-    rs1 = (bits >> 15) & 0x1F;
-    rs2 = (bits >> 20) & 0x1F;
+    : Instruction(bits), mnemonic_(std::move(mne)) {
+    rs1_ = (bits >> 15) & 0x1F;
+    rs2_ = (bits >> 20) & 0x1F;
     uint32_t imm11_5 = (bits >> 25) & 0x7F;
     uint32_t imm4_0  = (bits >> 7)  & 0x1F;
     uint32_t raw_imm = (imm11_5 << 5) | imm4_0;
-    imm = static_cast<int32_t>(raw_imm << 20) >> 20;
+    imm_ = static_cast<int32_t>(raw_imm << 20) >> 20;
   }
   [[nodiscard]]
-  auto disassemble([[maybe_unused]] uint32_t pc) const
+  auto disassemble([[maybe_unused]] uint32_t pc) const 
   -> std::string override {
-    return std::format("{:<7} x{}, {}(x{})", mnemonic, rs2, imm, rs1);
+    return std::format("{:<7} x{}, {}(x{})", 
+                       mnemonic_, rs2_, imm_, rs1_);
   }
 protected:
-  std::string mnemonic;
-  uint32_t rs1, rs2;
-  int32_t imm;
+  std::string mnemonic_;
+  uint32_t rs1_, rs2_;
+  int32_t imm_;
 };
 
 // B-Type (rs1, rs2, pc + imm)
 class BInstruction : public Instruction {
 public:
   BInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic(std::move(mne)) {
-    rs1 = (bits >> 15) & 0x1F;
-    rs2 = (bits >> 20) & 0x1F;
+    : Instruction(bits), mnemonic_(std::move(mne)) {
+    rs1_ = (bits >> 15) & 0x1F;
+    rs2_ = (bits >> 20) & 0x1F;
     uint32_t imm12   = (bits >> 31) & 0x01;
     uint32_t imm11   = (bits >> 7)  & 0x01;
     uint32_t imm10_5 = (bits >> 25) & 0x3F;
     uint32_t imm4_1  = (bits >> 8)  & 0x0F;
-    uint32_t raw_imm = (imm12 << 12)
-                     | (imm11 << 11)
-                     | (imm10_5 << 5)
-                     | (imm4_1 << 1);
-    imm = static_cast<int32_t>(raw_imm << 19) >> 19;
+    uint32_t assembled_imm = (imm12 << 12)
+                           | (imm11 << 11)
+                           | (imm10_5 << 5)
+                           | (imm4_1 << 1);
+    imm_ = static_cast<int32_t>(assembled_imm << 19) >> 19;
   }
   [[nodiscard]]
-  auto disassemble(uint32_t pc) const
+  auto disassemble(uint32_t pc) const 
   -> std::string override {
-    auto target = static_cast<uint32_t>(static_cast<int32_t>(pc) + imm);
-    return std::format("{:<7} x{}, x{}, 0x{:08x}", mnemonic, rs1, rs2, target);
+    auto target = static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_);
+    return std::format("{:<7} x{}, x{}, 0x{:08x}", 
+                       mnemonic_, rs1_, rs2_, target);
   }
 protected:
-  std::string mnemonic;
-  uint32_t rs1, rs2;
-  int32_t imm;
+  std::string mnemonic_;
+  uint32_t rs1_, rs2_;
+  int32_t imm_;
 };
 
 // J-Type (rd, pc + imm)
 class JInstruction : public Instruction {
 public:
   JInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic(std::move(mne)) {
-    rd = (bits >> 7) & 0x1F;
-    uint32_t bit31    = (bits >> 31) & 0x1;
-    uint32_t bits30_21 = (bits >> 21) & 0x3FF;
-    uint32_t bit20    = (bits >> 20) & 0x1;
-    uint32_t bits19_12 = (bits >> 12) & 0xFF;
-    uint32_t assembled = (bit31 << 20)
-                       | (bits19_12 << 12)
-                       | (bit20 << 11)
-                       | (bits30_21 << 1);
-    imm = static_cast<int32_t>(assembled << 11) >> 11;
+    : Instruction(bits), mnemonic_(std::move(mne)) {
+    rd_ = (bits >> 7) & 0x1F;
+    uint32_t imm_31    = (bits >> 31) & 0x1;
+    uint32_t imm_30_21 = (bits >> 21) & 0x3FF;
+    uint32_t imm_20    = (bits >> 20) & 0x1;
+    uint32_t imm_19_12 = (bits >> 12) & 0xFF;
+    uint32_t assembled_imm = (imm_31 << 20)
+                           | (imm_19_12 << 12)
+                           | (imm_20 << 11)
+                           | (imm_30_21 << 1);
+    imm_ = static_cast<int32_t>(assembled_imm << 11) >> 11;
   }
   [[nodiscard]]
   auto disassemble(uint32_t pc) const
   -> std::string override {
-    auto target = static_cast<uint32_t>(static_cast<int32_t>(pc) + imm);
-    return std::format("{:<7} x{}, 0x{:08x}", mnemonic, rd, target);
+    auto target = static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_);
+    return std::format("{:<7} x{}, 0x{:08x}", 
+                       mnemonic_, rd_, target);
   }
 protected:
-  std::string mnemonic;
-  uint32_t rd;
-  int32_t imm;
+  std::string mnemonic_;
+  uint32_t rd_;
+  int32_t imm_;
 };
 
 // U-Type (lui: imm, auipc: pc + imm)
 class UInstruction : public Instruction {
 public:
   UInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic(std::move(mne)) {
-    rd = (bits >> 7) & 0x1F;
-    imm = static_cast<int32_t>(bits & 0xFFFFF000);
+    : Instruction(bits), mnemonic_(std::move(mne)) {
+    rd_ = (bits >> 7) & 0x1F;
+    imm_ = static_cast<int32_t>(bits & 0xFFFFF000);
   }
   [[nodiscard]]
-  auto disassemble(uint32_t pc) const
+  auto disassemble(uint32_t pc) const 
   -> std::string override {
     uint32_t val 
-      = (mnemonic == "auipc")
-      ? static_cast<uint32_t>(static_cast<int32_t>(pc) + imm) 
-      : static_cast<uint32_t>(imm);
-    return std::format("{:<7} x{}, 0x{:08x}", mnemonic, rd, val);
+      = (mnemonic_ == "auipc")
+      ? static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_) 
+      : static_cast<uint32_t>(imm_);
+    return std::format("{:<7} x{}, 0x{:08x}", 
+                       mnemonic_, rd_, val);
   }
 protected:
-  std::string mnemonic;
-  uint32_t rd;
-  int32_t imm;
-  bool is_auipc;
+  std::string mnemonic_;
+  uint32_t rd_;
+  int32_t imm_;
 };
 
 // 미정의 명령어 형식
@@ -194,7 +200,7 @@ class UnknownInstr : public Instruction {
 public:
   using Instruction::Instruction;
   [[nodiscard]]
-  auto disassemble([[maybe_unused]] uint32_t pc) const
+  auto disassemble([[maybe_unused]] uint32_t pc) const 
   -> std::string override {
     return "unknown";
   }
@@ -214,6 +220,7 @@ enum class Opcode : uint8_t {
 };
 
 }
+
 
 auto InstructionDecoder::decode(uint32_t bits) 
 -> std::unique_ptr<Instruction> {

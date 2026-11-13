@@ -13,7 +13,11 @@ add_executable(disasm-rv32i disasm-rv32i.cc)
 target_link_libraries(Query_app PRIVATE Query_lib)
 target_link_libraries(Quote_app PRIVATE Quote_headers Basket_lib)
 target_link_libraries(TestTemplate_app PRIVATE MyTemplate_lib)
-target_link_libraries(disasm-rv32i PRIVATE RV32I_lib)
+target_link_libraries(disasm-rv32i 
+  PRIVATE
+  Decoder-rv32i_lib
+  Parser-elf_parser_lib
+)
 
 # 빌더 패턴 앱이 컴파일러 인덱싱에서 누락되어 꼬이는 것을 방지하기 위해 임시 헤더 연결
 target_link_libraries(BuilderPattern_app PRIVATE MyTemplate_lib) 

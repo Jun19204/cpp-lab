@@ -7,13 +7,13 @@
 
 // 인스트럭션 최상위 추상 클래스
 class Instruction {
-protected:
-  uint32_t raw_bits;
 public:
-  Instruction(uint32_t bits) : raw_bits(bits) {}
+  Instruction(uint32_t bits) : bits_(bits) {}
   virtual ~Instruction() = default;
   [[nodiscard]]
-  virtual std::string disassemble([[maybe_unused]] uint32_t pc) const = 0;
+  virtual auto disassemble([[maybe_unused]] uint32_t pc) const -> std::string = 0;
+protected:
+  uint32_t bits_;
 };
 
 // 형식별 인스트럭션 객체 생성 팩토리
@@ -30,6 +30,5 @@ private:
   static auto decodeJType(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeUType(uint32_t bits) -> std::unique_ptr<Instruction>;
  };
-
 
 #endif

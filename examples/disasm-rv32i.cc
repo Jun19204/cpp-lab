@@ -1,5 +1,5 @@
-#include "disasm/ElfParser.h"
-#include "disasm/RV32I.h"
+#include "parser/elf_parser.h"
+#include "decoder/rv32i.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -9,37 +9,40 @@
 #include <string>
 #include <vector>
 
+
 namespace  {
 // PC 주소와 바이너리 코드를 담은 구조체
-struct DecodedInstruction {
-  uint32_t pc;
-  uint32_t raw_bits;
-  size_t length; // 2 or 4 bytes
+struct ToDecodeInstruction {
+  uint32_t pc_;
+  uint32_t bits_;
+  size_t length_; // 2 or 4 bytes
 };
-}
+} // namespace
+
 
 int main(int argc, char **argv) {
   if (argc != 2) {
-    std::cerr << "usage : disasm-rv32i <file_path>\n";
+    std::cerr << "사용법: disasm-rv32i <file_path>\n";
     return EXIT_FAILURE;
   }
 
   std::string file_path(argv[1]);
-  auto parser = createElfParser(file_path);
-  auto text_bytes = parser->extractTextSection();
+  ElfParser parser{file_path};
+  auto text_section = parser.extractTextSection();
 
-  std::vector<DecodedInstruction> decoded_list;
+  std::vector<ToDecodeInstruction> to_decode_list;
   size_t pos = 0;
   uint32_t pc = 0x00000000; // 시작 주소 (필요시 e_entry 기반 주소로)
 
   // 가변 길이 바이트 patch 및 parsing
-  while (pos < text_bytes.size()) {
-    if (pos + sizeof(uint16_t) > text_bytes.size()) {
-      break; // 또는 예외 처리
+  while (pos < text_section.size()) {
+    if (pos + sizeof(uint16_t) > text_section.size()) {
+      std::cerr << "오류!: 잘못된 파일 크기 입니다. 올바른 ISA인지 확인하세요.\n";
+      return EXIT_FAILURE;
     }
     
     uint16_t half = 0;
-    std::memcpy(&half, &text_bytes[pos], sizeof(uint16_t));
+    std::memcpy(&half, &text_section[pos], sizeof(uint16_t));
     
     uint32_t raw_instr = 0;
     size_t instr_len = 0;
@@ -49,18 +52,18 @@ int main(int argc, char **argv) {
       raw_instr = static_cast<uint32_t>(half);
       instr_len = 2;
     } else {
-      if (pos + sizeof(uint32_t) > text_bytes.size()) {
+      if (pos + sizeof(uint32_t) > text_section.size()) {
         break; // 또는 예외 처리
       }
       // 32비트 표준 명령어
-      std::memcpy(&raw_instr, &text_bytes[pos], sizeof(uint32_t));
+      std::memcpy(&raw_instr, &text_section[pos], sizeof(uint32_t));
       instr_len = 4;
     }
       
-    decoded_list.push_back(DecodedInstruction{
-      .pc = pc, 
-      .raw_bits = raw_instr, 
-      .length = instr_len
+    to_decode_list.push_back(ToDecodeInstruction{
+      .pc_ = pc, 
+      .bits_ = raw_instr, 
+      .length_ = instr_len
     });
     
     pos += instr_len;
@@ -71,14 +74,14 @@ int main(int argc, char **argv) {
   std::cout << "-----------------------------------------------------\n";
   std::cout << " PC 주소     바이너리 코드     디스어셈블 결과\n";
   std::cout << "-----------------------------------------------------\n";
-  for (const auto& decoded : decoded_list) {
-    auto instr = InstructionFactory::create(decoded.raw_bits);
+  for (const auto& to_decode : to_decode_list) {
+    auto decoded_instr = InstructionDecoder::decode(to_decode.bits_);
     std::cout << "0x" << std::setw(8) << std::setfill('0') << std::hex 
-              << decoded.pc << "    "
-              << "0x" << std::setw(decoded.length == 2 ? 4 : 8) 
+              << to_decode.pc_ << "    "
+              << "0x" << std::setw(to_decode.length_ == 2 ? 4 : 8) 
               << std::setfill('0') << std::hex 
-              << decoded.raw_bits << "    " 
-              << instr->disassemble(decoded.pc) << "\n";
+              << to_decode.bits_ << "    " 
+              << decoded_instr->disassemble(to_decode.pc_) << "\n";
   }
 
   return EXIT_SUCCESS;

@@ -1,5 +1,5 @@
-#include "disasm/RV32I.h"
-#include "disasm/TestParser.h"
+#include "decoder/rv32i.h"
+#include "parser/TestParser.h"
 #include "gtest/gtest.h"
 
 #include <cstdint>
@@ -26,17 +26,13 @@ TEST(DisasmIntegrationTest, DumpTestBinary) {
   std::cout << "-----------------------------------------------------\n";
 
   for (std::uint32_t bits : instructions) {
-    auto instr = InstructionFactory::create(bits);
+    auto instr = InstructionDecoder::decode(bits);
     std::cout << "0x" << std::setw(8) << std::setfill('0') << std::hex << pc
               << "    "
               << "0x" << std::setw(8) << std::setfill('0') << std::hex << bits
               << "    " << instr->disassemble(pc) << "\n";
     pc += (bits & 0x3) == 0x3 ? 4 : 2;
   }
-
-  auto instr = InstructionFactory::create((uint32_t)0x00c6ba23);
-  std::cout << instr->disassemble(pc) << '\n';
-
 
   SUCCEED();
 }

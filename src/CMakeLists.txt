@@ -9,7 +9,8 @@ add_library(Basket_lib STATIC Basket.cc)
 add_library(error_code_lib STATIC error_code.cc)
 add_library(Query_lib STATIC Query.cc)
 add_library(MyString_lib STATIC MyString.cc)
-add_library(RV32I_lib STATIC RV32I.cc)
+add_library(Decoder-rv32i_lib STATIC rv32i.cc)
+add_library(Parser-elf_parser_lib STATIC elf_parser.cc)
 
 # ============================================================
 # Header-only Libraries
@@ -19,7 +20,6 @@ set(
   ALL_HERDERS
     MyTemplate_lib
     Quote_headers
-    Disasm_headers
 )
 
 foreach(header IN LISTS ALL_HERDERS)
@@ -56,7 +56,8 @@ set(
     error_code_lib
     Query_lib
     MyString_lib
-    RV32I_lib
+    Decoder-rv32i_lib
+    Parser-elf_parser_lib
 )
 
 foreach(lib IN LISTS ALL_LIBS)
