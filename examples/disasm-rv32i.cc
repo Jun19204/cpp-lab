@@ -25,8 +25,13 @@ struct ToDecodeInstrInfo {
   size_t length_; // 2 or 4 bytes
 };
 
-template <typename T> 
-  requires std::integral<T> && (!std::same_as<std::remove_cv_t<T>, bool>)
+template <typename T>
+concept UnsignedInteger 
+    = std::unsigned_integral<T> &&
+      (!std::same_as<std::remove_cv_t<T>, bool>);
+
+template <UnsignedInteger T> 
+[[nodiscard]]
 T readLE(std::span<const std::byte> data, size_t offset) {
   if (offset > data.size() || sizeof(T) > data.size() - offset) {
     throw std::out_of_range(
@@ -34,13 +39,13 @@ T readLE(std::span<const std::byte> data, size_t offset) {
                                          offset, sizeof(T), data.size())
     );
   }
-  std::array<std::byte, sizeof(T)> raw{};
+  std::array<std::byte, sizeof(T)> temp_buffer{};
   std::copy_n(
       data.begin() + static_cast<ptrdiff_t>(offset), 
       sizeof(T), 
-      raw.begin()
+      temp_buffer.begin()
   );
-  return std::bit_cast<T>(raw);
+  return std::bit_cast<T>(temp_buffer);
 }
 
 } // namespace

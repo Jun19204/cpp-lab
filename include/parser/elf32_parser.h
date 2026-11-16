@@ -18,9 +18,6 @@ struct Elf32_Phdr;
 #endif // __has_include(<elf.h>)
 
 
-template <typename T>
-concept TriviallyCopyable = std::is_trivially_copyable_v<T>;
-
 
 class Elf32Parser {
 public:
@@ -48,7 +45,8 @@ private:
   [[nodiscard]] 
   static bool match_segment(const Elf32_Phdr& phdr, std::string_view name);
   
-  template <TriviallyCopyable T> 
+  template <typename T> 
+  requires std::is_trivially_copyable_v<T>
   [[nodiscard]] 
   T readAt(size_t offset) const;
   
