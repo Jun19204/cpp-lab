@@ -17,7 +17,7 @@ public:
   }
   [[nodiscard]]
   auto disassemble([[maybe_unused]] uint32_t pc) const 
-  -> std::string override {
+    -> std::string override {
     return std::format("{:<7} x{}, x{}, x{}", 
                        mnemonic_, rd_, rs1_, rs2_);
   }
@@ -37,7 +37,7 @@ public:
   }
   [[nodiscard]]
   auto disassemble([[maybe_unused]] uint32_t pc) const
-  -> std::string override {
+    -> std::string override {
     return std::format("{:<7} x{}, x{}, {}", 
                        mnemonic_, rd_, rs1_, imm_);
   }
@@ -58,7 +58,7 @@ public:
   }
   [[nodiscard]]
   auto disassemble([[maybe_unused]] uint32_t pc) const 
-  -> std::string override {
+    -> std::string override {
     return std::format("{:<7} x{}, x{}, {}", 
                        mnemonic_, rd_, rs1_, shamt_);
   }
@@ -78,7 +78,7 @@ public:
   }
   [[nodiscard]]
   auto disassemble([[maybe_unused]] uint32_t pc) const 
-  -> std::string override {
+    -> std::string override {
     return std::format("{:<7} x{}, {}(x{})", 
                        mnemonic_, rd_, imm_, rs1_);
   }
@@ -102,7 +102,7 @@ public:
   }
   [[nodiscard]]
   auto disassemble([[maybe_unused]] uint32_t pc) const 
-  -> std::string override {
+    -> std::string override {
     return std::format("{:<7} x{}, {}(x{})", 
                        mnemonic_, rs2_, imm_, rs1_);
   }
@@ -131,7 +131,7 @@ public:
   }
   [[nodiscard]]
   auto disassemble(uint32_t pc) const 
-  -> std::string override {
+    -> std::string override {
     auto target = static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_);
     return std::format("{:<7} x{}, x{}, 0x{:08x}", 
                        mnemonic_, rs1_, rs2_, target);
@@ -160,7 +160,7 @@ public:
   }
   [[nodiscard]]
   auto disassemble(uint32_t pc) const
-  -> std::string override {
+    -> std::string override {
     auto target = static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_);
     return std::format("{:<7} x{}, 0x{:08x}", 
                        mnemonic_, rd_, target);
@@ -181,7 +181,7 @@ public:
   }
   [[nodiscard]]
   auto disassemble(uint32_t pc) const 
-  -> std::string override {
+    -> std::string override {
     uint32_t val 
       = (mnemonic_ == "auipc")
       ? static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_) 
@@ -223,7 +223,7 @@ enum class Opcode : uint8_t {
 
 
 auto InstructionDecoder::decode(uint32_t bits) 
--> std::unique_ptr<Instruction> {
+  -> std::unique_ptr<Instruction> {
   auto opcode = static_cast<Opcode>(bits & 0x7F);
   switch (opcode) {
     case Opcode::RType: return decodeRType(bits);
@@ -241,7 +241,7 @@ auto InstructionDecoder::decode(uint32_t bits)
 }
 
 auto InstructionDecoder::decodeRType(uint32_t bits) 
--> std::unique_ptr<Instruction> {
+  -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   uint32_t funct7 = (bits >> 25) & 0x7F;
   switch (funct3) {
@@ -265,7 +265,7 @@ auto InstructionDecoder::decodeRType(uint32_t bits)
 }
 
 auto InstructionDecoder::decodeITypeLoad(uint32_t bits) 
--> std::unique_ptr<Instruction> {
+  -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
     case 0x0: return std::make_unique<LoadJalrInstruction>(bits, "lb");
@@ -279,7 +279,7 @@ auto InstructionDecoder::decodeITypeLoad(uint32_t bits)
 }
 
 auto InstructionDecoder::decodeITypeArith(uint32_t bits) 
--> std::unique_ptr<Instruction> {
+  -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   uint32_t funct7 = (bits >> 25) & 0x7F;
   switch (funct3) {
@@ -302,7 +302,7 @@ auto InstructionDecoder::decodeITypeArith(uint32_t bits)
 }
 
 auto InstructionDecoder::decodeITypeJump(uint32_t bits) 
--> std::unique_ptr<Instruction> {
+  -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
     case 0x0: return std::make_unique<LoadJalrInstruction>(bits, "jalr");
@@ -312,7 +312,7 @@ auto InstructionDecoder::decodeITypeJump(uint32_t bits)
 }
 
 auto InstructionDecoder::decodeSType(uint32_t bits)
--> std::unique_ptr<Instruction> {
+  -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
     case 0x0: return std::make_unique<SInstruction>(bits, "sb");
@@ -324,7 +324,7 @@ auto InstructionDecoder::decodeSType(uint32_t bits)
 }
 
 auto InstructionDecoder::decodeBType(uint32_t bits) 
--> std::unique_ptr<Instruction> {
+  -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
     case 0x0: return std::make_unique<BInstruction>(bits, "beq");
@@ -339,12 +339,12 @@ auto InstructionDecoder::decodeBType(uint32_t bits)
 }
 
 auto InstructionDecoder::decodeJType(uint32_t bits)
--> std::unique_ptr<Instruction> {
+  -> std::unique_ptr<Instruction> {
   return std::make_unique<JInstruction>(bits, "jal");
 }
 
 auto InstructionDecoder::decodeUType(uint32_t bits) 
--> std::unique_ptr<Instruction> {
+  -> std::unique_ptr<Instruction> {
   uint32_t opcode = bits & 0x7F;
   if (opcode == 0x37) { return std::make_unique<UInstruction>(bits, "lui"); }
   if (opcode == 0x17) { return std::make_unique<UInstruction>(bits, "auipc"); }

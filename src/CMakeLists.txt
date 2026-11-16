@@ -10,7 +10,7 @@ add_library(error_code_lib STATIC error_code.cc)
 add_library(Query_lib STATIC Query.cc)
 add_library(MyString_lib STATIC MyString.cc)
 add_library(Decoder-rv32i_lib STATIC rv32i.cc)
-add_library(Parser-elf_parser_lib STATIC elf_parser.cc)
+add_library(Parser-elf32_parser_lib STATIC elf32_parser.cc)
 
 # ============================================================
 # Header-only Libraries
@@ -57,7 +57,7 @@ set(
     Query_lib
     MyString_lib
     Decoder-rv32i_lib
-    Parser-elf_parser_lib
+    Parser-elf32_parser_lib
 )
 
 foreach(lib IN LISTS ALL_LIBS)
