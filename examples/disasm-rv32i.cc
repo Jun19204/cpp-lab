@@ -3,6 +3,7 @@
 
 #include <array>
 #include <bit>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -10,20 +11,29 @@
 #include <iostream>
 #include <span>
 #include <string>
+#include <type_traits>
 #include <vector>
 #include <format>
 #include <print>
 
 
 namespace {
+
 struct ToDecodeInstrInfo {
   uint32_t pc_;
   uint32_t bits_;
   size_t length_; // 2 or 4 bytes
 };
 
-template <typename T>
-T readLe(std::span<const std::byte> data, size_t offset) {
+template <typename T> 
+  requires std::integral<T> && (!std::same_as<std::remove_cv_t<T>, bool>)
+T readLE(std::span<const std::byte> data, size_t offset) {
+  if (offset > data.size() || sizeof(T) > data.size() - offset) {
+    throw std::out_of_range(
+        std::format("readLE 범위 초과: offset={}, size={}, data_size={}",
+                                         offset, sizeof(T), data.size())
+    );
+  }
   std::array<std::byte, sizeof(T)> raw{};
   std::copy_n(
       data.begin() + static_cast<ptrdiff_t>(offset), 
@@ -32,7 +42,9 @@ T readLe(std::span<const std::byte> data, size_t offset) {
   );
   return std::bit_cast<T>(raw);
 }
+
 } // namespace
+
 
 
 int main(int argc, char **argv) {
@@ -55,13 +67,7 @@ int main(int argc, char **argv) {
     uint32_t pc = 0x00000000;
     
     while (pos < text_region.size()) {
-      if (pos + sizeof(uint16_t) > text_region.size()) {
-        std::cerr
-            << "오류!: 잘못된 파일 크기입니다. 올바른 ISA인지 확인하세요.\n";
-        return EXIT_FAILURE;
-      }
-      
-      const auto half = readLe<uint16_t>(text_region, pos);
+      const auto half = readLE<uint16_t>(text_region, pos);
       uint32_t raw_instr = 0;
       size_t instr_len = 0;
       
@@ -70,12 +76,8 @@ int main(int argc, char **argv) {
         raw_instr = static_cast<uint32_t>(half);
         instr_len = 2;
       } else {
-        if (pos + sizeof(uint32_t) > text_region.size()) {
-          std::cerr << "오류!: 32비트 명령어 바이트가 부족합니다.\n";
-          return EXIT_FAILURE;
-        }
         // 32비트 표준 명령어
-        raw_instr = readLe<uint32_t>(text_region, pos);
+        raw_instr = readLE<uint32_t>(text_region, pos);
         instr_len = 4;
       }
       
