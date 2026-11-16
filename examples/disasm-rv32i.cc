@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
     std::println("-----------------------------------------------------");
     std::println(" PC 주소      바이너리 코드   디스어셈블 결과");
     std::println("-----------------------------------------------------");
-    for (const auto &to_decode : to_decode_list) {
+    for (const auto& to_decode : to_decode_list) {
       auto decoded_instr = InstructionDecoder::decode(to_decode.bits_);
       
       const std::string hex_bits = (to_decode.length_ == 2)

@@ -2,8 +2,8 @@
 #define RV32I_H
 
 #include <cstdint>
-#include <string>
 #include <memory>
+
 
 // 인스트럭션 최상위 추상 클래스
 class Instruction {
@@ -15,6 +15,7 @@ public:
 protected:
   uint32_t bits_;
 };
+
 
 // 형식별 인스트럭션 객체 생성 팩토리
 class InstructionDecoder {
