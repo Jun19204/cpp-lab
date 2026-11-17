@@ -80,12 +80,14 @@ struct Elf32_Phdr {
 #endif // !SYSTEM_HAS_ELF_H
 
 
+// 바이너리 영역 래핑 구조체
 struct BinaryRegion {
   std::span<const std::byte> data_;
   uint32_t begin_vma_;
 };
 
 
+// 32비트 ELF 파일 전용 파서 클래스
 class Elf32Parser {
 public:
   using size_type = std::vector<std::byte>::size_type;
