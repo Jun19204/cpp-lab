@@ -8,6 +8,7 @@ project(
 
 # 지원되는 경우 MSVC 컴파일러에 대해 Hot Reload 사용하도록 설정
 if(MSVC)
+  add_compile_options(/utf-8)
   if(POLICY CMP0141)
     cmake_policy(SET CMP0141 NEW)
     # CXX_COMPILER_ID 단독 검사로 수정
