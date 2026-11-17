@@ -11,6 +11,47 @@
 #include <string_view>
 #include <vector>
 
+
+namespace {
+[[nodiscard]]
+bool matchSegment(const Elf32_Phdr& phdr,std::string_view name) {
+  if (name == "LOAD_RX" || name == ".text") {
+    return phdr.p_type == PT_LOAD && (phdr.p_flags & PF_X) != 0;
+  }
+  if (name == "LOAD_RW" || name == ".data") {
+    return (phdr.p_type == PT_LOAD) && 
+           (phdr.p_flags & PF_W) != 0 &&
+           (phdr.p_flags & PF_X) == 0;
+  }
+  if (name == "LOAD_R" || name == ".rodata") {
+    return phdr.p_type == PT_LOAD && phdr.p_flags == PF_R;
+  }
+  if (name == "INTERP" || name == ".interp") {
+    return phdr.p_type == PT_INTERP;
+  }
+  if (name == "DYNAMIC" || name == ".dynamic") {
+    return phdr.p_type == PT_DYNAMIC;
+  }
+  if (name == "NOTE") {
+    return phdr.p_type == PT_NOTE;
+  }
+  return false;
+}
+
+[[nodiscard]]
+auto getStringAt(std::span<const std::byte> strtab, size_t offset) 
+  -> std::string_view {
+  if (offset >= strtab.size()) {
+    return {};
+  }
+  const auto sub = strtab.subspan(offset);
+  const auto iter = std::find(sub.begin(), sub.end(), std::byte{0});
+  const auto len = static_cast<size_t>(std::distance(sub.begin(), iter));
+  return {reinterpret_cast<const char*>(sub.data()), len};
+}
+} // namespace
+
+
 Elf32Parser::Elf32Parser(const std::filesystem::path& filepath) {
   std::ifstream file(filepath, std::ios::binary | std::ios::ate);
   if (!file) {
@@ -91,31 +132,6 @@ auto Elf32Parser::getText() const
 }
 
 
-bool Elf32Parser::matchSegment(const Elf32_Phdr& phdr,std::string_view name) {
-  if (name == "LOAD_RX" || name == ".text") {
-    return phdr.p_type == PT_LOAD && (phdr.p_flags & PF_X) != 0;
-  }
-  if (name == "LOAD_RW" || name == ".data") {
-    return (phdr.p_type == PT_LOAD) && 
-           (phdr.p_flags & PF_W) != 0 &&
-           (phdr.p_flags & PF_X) == 0;
-  }
-  if (name == "LOAD_R" || name == ".rodata") {
-    return phdr.p_type == PT_LOAD && phdr.p_flags == PF_R;
-  }
-  if (name == "INTERP" || name == ".interp") {
-    return phdr.p_type == PT_INTERP;
-  }
-  if (name == "DYNAMIC" || name == ".dynamic") {
-    return phdr.p_type == PT_DYNAMIC;
-  }
-  if (name == "NOTE") {
-    return phdr.p_type == PT_NOTE;
-  }
-  return false;
-}
-
-
 template <typename T> 
 requires std::is_trivially_copyable_v<T>
 T Elf32Parser::readAt(size_t offset) const {
@@ -132,18 +148,6 @@ auto Elf32Parser::slice(size_t offset, size_t count) const
     throw std::out_of_range("ELF 파일의 유효 범위를 벗어난 접근입니다.");
   }
   return std::span{buffer_}.subspan(offset, count);
-}
-
-
-auto Elf32Parser::getStringAt(std::span<const std::byte> strtab, size_t offset) 
-  -> std::string_view {
-  if (offset >= strtab.size()) {
-    return {};
-  }
-  const auto sub = strtab.subspan(offset);
-  const auto iter = std::find(sub.begin(), sub.end(), std::byte{0});
-  const auto len = static_cast<size_t>(std::distance(sub.begin(), iter));
-  return {reinterpret_cast<const char*>(sub.data()), len};
 }
 
 

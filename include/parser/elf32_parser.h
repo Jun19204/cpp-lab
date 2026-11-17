@@ -38,10 +38,6 @@ public:
 private:
   std::vector<std::byte> buffer_;
 
-  // 문자열 이름과 Program Header의 타입/플래그 매칭
-  [[nodiscard]] 
-  static bool matchSegment(const Elf32_Phdr& phdr, std::string_view name);
-  
   template <typename T> 
   requires std::is_trivially_copyable_v<T>
   [[nodiscard]] 
@@ -50,13 +46,9 @@ private:
   [[nodiscard]] 
   auto slice(size_t offset, size_t count) const
     -> std::span<const std::byte>;
- 
-  [[nodiscard]] 
-  static auto getStringAt (std::span<const std::byte> strtab, size_t offset) 
-    -> std::string_view;
-    
+  
   void validateHeader() const;
- };
+};
 
 
 #ifdef ELF_H
