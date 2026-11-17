@@ -21,18 +21,20 @@ struct Elf32_Phdr;
 
 class Elf32Parser {
 public:
+  using size_type = std::vector<std::byte>::size_type;
+
   explicit Elf32Parser(const std::filesystem::path& filepath);
 
   [[nodiscard]] 
-  auto getSection(std::string_view name) const
+  auto getSection(std::string_view sec_name) const
     -> std::optional<std::span<const std::byte>>;
  
   [[nodiscard]] 
-  auto getSegment(std::string_view name) const
+  auto getSegment(std::string_view seg_name) const
     -> std::optional<std::span<const std::byte>>;
   
   [[nodiscard]] 
-  auto getText() const
+  auto getTextRegion() const
     -> std::optional<std::span<const std::byte>>;
 
 private:

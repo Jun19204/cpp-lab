@@ -5,6 +5,7 @@
 #include <bit>
 #include <filesystem>
 #include <fstream>
+#include <ios>
 #include <optional>
 #include <span>
 #include <stdexcept>
@@ -13,57 +14,60 @@
 
 
 namespace {
+
 [[nodiscard]]
-bool matchSegment(const Elf32_Phdr& phdr,std::string_view name) {
-  if (name == "LOAD_RX" || name == ".text") {
+bool isSegmentMatching(const Elf32_Phdr& phdr,std::string_view seg_name) {
+  if (seg_name == "LOAD_RX") {
     return phdr.p_type == PT_LOAD && (phdr.p_flags & PF_X) != 0;
   }
-  if (name == "LOAD_RW" || name == ".data") {
+  if (seg_name == "LOAD_RW") {
     return (phdr.p_type == PT_LOAD) && 
            (phdr.p_flags & PF_W) != 0 &&
            (phdr.p_flags & PF_X) == 0;
   }
-  if (name == "LOAD_R" || name == ".rodata") {
+  if (seg_name == "LOAD_R") {
     return phdr.p_type == PT_LOAD && phdr.p_flags == PF_R;
   }
-  if (name == "INTERP" || name == ".interp") {
+  if (seg_name == "INTERP") {
     return phdr.p_type == PT_INTERP;
   }
-  if (name == "DYNAMIC" || name == ".dynamic") {
+  if (seg_name == "DYNAMIC") {
     return phdr.p_type == PT_DYNAMIC;
   }
-  if (name == "NOTE") {
+  if (seg_name == "NOTE") {
     return phdr.p_type == PT_NOTE;
   }
   return false;
 }
 
 [[nodiscard]]
-auto getStringAt(std::span<const std::byte> strtab, size_t pos) 
+auto getStringAt(std::span<const std::byte> strtab, size_t offset) 
   -> std::string_view {
-  if (pos >= strtab.size()) {
+  if (offset >= strtab.size()) {
     return {};
   }
-  const auto sub = strtab.subspan(pos);
+  const auto sub = strtab.subspan(offset);
   const auto iter = std::find(sub.begin(), sub.end(), std::byte{0});
   const auto len = static_cast<size_t>(std::distance(sub.begin(), iter));
   return {reinterpret_cast<const char*>(sub.data()), len};
 }
+
 } // namespace
 
 
+
 Elf32Parser::Elf32Parser(const std::filesystem::path& filepath) {
-  std::ifstream file(filepath, std::ios::binary | std::ios::ate);
+  const auto file_size = std::filesystem::file_size(filepath);
+  
+  std::ifstream file(filepath, std::ios::binary);
   if (!file) {
     throw std::runtime_error(
         "파일(" + filepath.filename().string() + ") 열기 실패");
   }
 
-  const auto size = file.tellg();
-  file.seekg(0, std::ios::beg);
-
-  buffer_.resize(static_cast<size_t>(size));
-  if (!file.read(reinterpret_cast<char*>(buffer_.data()), size)) {
+  buffer_.resize(static_cast<size_type>(file_size));
+  if (!file.read(reinterpret_cast<char*>(buffer_.data()), 
+                 static_cast<std::streamsize>(file_size))) {
     throw std::runtime_error(
         "파일(" + filepath.filename().string() + ") 읽기 실패");
   }
@@ -72,7 +76,7 @@ Elf32Parser::Elf32Parser(const std::filesystem::path& filepath) {
 }
 
 
-auto Elf32Parser::getSection(std::string_view name) const 
+auto Elf32Parser::getSection(std::string_view sec_name) const 
   -> std::optional<std::span<const std::byte>> {
   const auto ehdr = readAt<Elf32_Ehdr>(0);
 
@@ -92,7 +96,7 @@ auto Elf32Parser::getSection(std::string_view name) const
                              + (i * ehdr.e_shentsize);
     const auto shdr = readAt<Elf32_Shdr>(shdr_offset);
     
-    if (getStringAt(strtab_span, shdr.sh_name) == name) {
+    if (getStringAt(strtab_span, shdr.sh_name) == sec_name) {
       return slice(shdr.sh_offset, shdr.sh_size);
     }
   }
@@ -101,7 +105,7 @@ auto Elf32Parser::getSection(std::string_view name) const
 }
 
 
-auto Elf32Parser::getSegment(std::string_view name) const 
+auto Elf32Parser::getSegment(std::string_view seg_name) const 
   -> std::optional<std::span<const std::byte>> {
   const auto ehdr = readAt<Elf32_Ehdr>(0);
 
@@ -114,7 +118,7 @@ auto Elf32Parser::getSegment(std::string_view name) const
                              + (i * ehdr.e_phentsize);
     const auto phdr = readAt<Elf32_Phdr>(phdr_offset);
       
-    if (matchSegment(phdr, name)) {
+    if (isSegmentMatching(phdr, seg_name)) {
       return slice(phdr.p_offset, phdr.p_filesz);
     }
   }
@@ -123,10 +127,10 @@ auto Elf32Parser::getSegment(std::string_view name) const
 }
 
 
-auto Elf32Parser::getText() const
+auto Elf32Parser::getTextRegion() const
   -> std::optional<std::span<const std::byte>> {
-  if (auto sec = getSection(".text")) {
-    return sec;
+  if (auto sec_opt = getSection(".text")) {
+    return sec_opt;
   }
   return getSegment("LOAD_RX");
 }
@@ -172,4 +176,3 @@ void Elf32Parser::validateHeader() const {
         "호스트와 ELF 파일의 엔디안이 일치하지 않습니다.");
   }
 }
-

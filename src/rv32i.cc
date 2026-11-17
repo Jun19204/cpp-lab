@@ -1,15 +1,18 @@
 #include "decoder/rv32i.h"
 
+#include <string>
+#include <cstdint>
 #include <memory>
 #include <format>
+#include <utility>
 
 
 namespace {
 
 // R-Type (rd, rs1, rs2)
-class RInstruction : public Instruction {
+class RType final : public Instruction {
 public:
-  RInstruction(uint32_t bits, std::string mne) 
+  RType(uint32_t bits, std::string mne) 
     : Instruction(bits, std::move(mne)) {
     rd_     = (bits >> 7) & 0x1F;
     rs1_    = (bits >> 15) & 0x1F;
@@ -26,9 +29,9 @@ protected:
 };
 
 // I-Type 산술/논리 (rd, rs1, imm)
-class ArithLogicIInstruction : public Instruction {
+class ITypeArithLogic : public Instruction {
 public:
-  ArithLogicIInstruction(uint32_t bits, std::string mne) 
+  ITypeArithLogic(uint32_t bits, std::string mne) 
     : Instruction(bits, std::move(mne)) {
     rd_  = (bits >> 7) & 0x1F;
     rs1_ = (bits >> 15) & 0x1F;
@@ -45,10 +48,22 @@ protected:
   int32_t imm_;
 };
 
-// I-Type 시프트 (rd, rs1, shamt)
-class ShiftIInstruction : public Instruction {
+// I-Type Load 및 Jalr (rd, imm(rs1))
+class ITypeLoadJalr final : public ITypeArithLogic {
 public:
-  ShiftIInstruction(uint32_t bits, std::string mne) 
+  using ITypeArithLogic::ITypeArithLogic;
+  [[nodiscard]]
+  auto disassemble([[maybe_unused]] uint32_t pc) const 
+    -> std::string override {
+    return std::format("{:<7} x{}, {}(x{})", 
+                       mnemonic_, rd_, imm_, rs1_);
+  }
+};
+
+// I-Type 시프트 (rd, rs1, shamt)
+class ITypeShift final : public Instruction {
+public:
+  ITypeShift(uint32_t bits, std::string mne) 
     : Instruction(bits, std::move(mne)) {
     rd_    = (bits >> 7) & 0x1F;
     rs1_   = (bits >> 15) & 0x1F;
@@ -64,37 +79,17 @@ protected:
   uint32_t rd_, rs1_, shamt_;
 };
 
-// I-Type Load 및 Jalr (rd, imm(rs1))
-class LoadJalrInstruction : public Instruction {
-public:
-  LoadJalrInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits, std::move(mne)) {
-    rd_  = (bits >> 7) & 0x1F;
-    rs1_ = (bits >> 15) & 0x1F;
-    imm_ = static_cast<int32_t>(bits) >> 20;
-  }
-  [[nodiscard]]
-  auto disassemble([[maybe_unused]] uint32_t pc) const 
-    -> std::string override {
-    return std::format("{:<7} x{}, {}(x{})", 
-                       mnemonic_, rd_, imm_, rs1_);
-  }
-protected:
-  uint32_t rd_, rs1_;
-  int32_t imm_;
-};
-
 // S-Type (rs2, imm(rs1))
-class SInstruction : public Instruction {
+class SType final : public Instruction {
 public:
-  SInstruction(uint32_t bits, std::string mne) 
+  SType(uint32_t bits, std::string mne) 
     : Instruction(bits, std::move(mne)) {
     rs1_ = (bits >> 15) & 0x1F;
     rs2_ = (bits >> 20) & 0x1F;
     uint32_t imm11_5 = (bits >> 25) & 0x7F;
     uint32_t imm4_0  = (bits >> 7)  & 0x1F;
-    uint32_t raw_imm = (imm11_5 << 5) | imm4_0;
-    imm_ = static_cast<int32_t>(raw_imm << 20) >> 20;
+    uint32_t assembled_imm = (imm11_5 << 5) | imm4_0;
+    imm_ = static_cast<int32_t>(assembled_imm << 20) >> 20;
   }
   [[nodiscard]]
   auto disassemble([[maybe_unused]] uint32_t pc) const 
@@ -108,9 +103,9 @@ protected:
 };
 
 // B-Type (rs1, rs2, pc + imm)
-class BInstruction : public Instruction {
+class BType final : public Instruction {
 public:
-  BInstruction(uint32_t bits, std::string mne) 
+  BType(uint32_t bits, std::string mne) 
     : Instruction(bits, std::move(mne)) {
     rs1_ = (bits >> 15) & 0x1F;
     rs2_ = (bits >> 20) & 0x1F;
@@ -137,9 +132,9 @@ protected:
 };
 
 // J-Type (rd, pc + imm)
-class JInstruction : public Instruction {
+class JType final : public Instruction {
 public:
-  JInstruction(uint32_t bits, std::string mne) 
+  JType(uint32_t bits, std::string mne) 
     : Instruction(bits, std::move(mne)) {
     rd_ = (bits >> 7) & 0x1F;
     uint32_t imm_31    = (bits >> 31) & 0x1;
@@ -165,9 +160,9 @@ protected:
 };
 
 // U-Type (lui: imm, auipc: pc + imm)
-class UInstruction : public Instruction {
+class UType final : public Instruction {
 public:
-  UInstruction(uint32_t bits, std::string mne) 
+  UType(uint32_t bits, std::string mne) 
     : Instruction(bits, std::move(mne)) {
     rd_ = (bits >> 7) & 0x1F;
     imm_ = static_cast<int32_t>(bits & 0xFFFFF000);
@@ -175,10 +170,9 @@ public:
   [[nodiscard]]
   auto disassemble(uint32_t pc) const 
     -> std::string override {
-    uint32_t val 
-      = (mnemonic_ == "auipc")
-      ? static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_) 
-      : static_cast<uint32_t>(imm_);
+    uint32_t val = (mnemonic_ == "auipc")
+                 ? static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_) 
+                 : static_cast<uint32_t>(imm_);
     return std::format("{:<7} x{}, 0x{:08x}", 
                        mnemonic_, rd_, val);
   }
@@ -188,7 +182,7 @@ protected:
 };
 
 // 미정의 명령어 형식
-class UnknownInstr : public Instruction {
+class Unknown final : public Instruction {
 public:
   using Instruction::Instruction;
   [[nodiscard]]
@@ -201,7 +195,7 @@ public:
 // Opcode 열거형
 enum class Opcode : uint8_t {
   RType = 0x33,
-  ITypeArithLogic = 0x13,
+  ITypeArithLogicShift = 0x13,
   ITypeLoad = 0x03,
   ITypeJump = 0x67,
   SType = 0x23,
@@ -220,7 +214,7 @@ auto InstructionDecoder::decode(uint32_t bits)
   switch (opcode) {
     case Opcode::RType: return decodeRType(bits);
     case Opcode::ITypeLoad: return decodeITypeLoad(bits);
-    case Opcode::ITypeArithLogic: return decodeITypeArithLogic(bits);
+    case Opcode::ITypeArithLogicShift: return decodeITypeArithLogicShift(bits);
     case Opcode::ITypeJump: return decodeITypeJump(bits);
     case Opcode::SType: return decodeSType(bits);
     case Opcode::BType: return decodeBType(bits);
@@ -229,7 +223,7 @@ auto InstructionDecoder::decode(uint32_t bits)
     case Opcode::UTypeAddi: return decodeUType(bits);
     default: break;
   }
-  return std::make_unique<UnknownInstr>(bits);
+  return std::make_unique<Unknown>(bits);
 }
 
 auto InstructionDecoder::decodeRType(uint32_t bits) 
@@ -238,108 +232,107 @@ auto InstructionDecoder::decodeRType(uint32_t bits)
   uint32_t funct7 = (bits >> 25) & 0x7F;
   switch (funct3) {
     case 0x0:
-      if (funct7 == 0x00) { return std::make_unique<RInstruction>(bits, "add"); }
-      if (funct7 == 0x20) { return std::make_unique<RInstruction>(bits, "sub"); }
+      if (funct7 == 0x00) { return std::make_unique<RType>(bits, "add"); }
+      if (funct7 == 0x20) { return std::make_unique<RType>(bits, "sub"); }
       break;
-    case 0x1: return std::make_unique<RInstruction>(bits, "sll");
-    case 0x2: return std::make_unique<RInstruction>(bits, "slt");
-    case 0x3: return std::make_unique<RInstruction>(bits, "sltu");
-    case 0x4: return std::make_unique<RInstruction>(bits, "xor");
+    case 0x1: return std::make_unique<RType>(bits, "sll");
+    case 0x2: return std::make_unique<RType>(bits, "slt");
+    case 0x3: return std::make_unique<RType>(bits, "sltu");
+    case 0x4: return std::make_unique<RType>(bits, "xor");
     case 0x5:
-      if (funct7 == 0x00) { return std::make_unique<RInstruction>(bits, "srl"); }
-      if (funct7 == 0x20) { return std::make_unique<RInstruction>(bits, "sra"); }
+      if (funct7 == 0x00) { return std::make_unique<RType>(bits, "srl"); }
+      if (funct7 == 0x20) { return std::make_unique<RType>(bits, "sra"); }
       break;
-    case 0x6: return std::make_unique<RInstruction>(bits, "or");
-    case 0x7: return std::make_unique<RInstruction>(bits, "and");
+    case 0x6: return std::make_unique<RType>(bits, "or");
+    case 0x7: return std::make_unique<RType>(bits, "and");
     default: break;
   }
-  return std::make_unique<UnknownInstr>(bits);
+  return std::make_unique<Unknown>(bits);
 }
 
 auto InstructionDecoder::decodeITypeLoad(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
-    case 0x0: return std::make_unique<LoadJalrInstruction>(bits, "lb");
-    case 0x1: return std::make_unique<LoadJalrInstruction>(bits, "lh");
-    case 0x2: return std::make_unique<LoadJalrInstruction>(bits, "lw");
-    case 0x4: return std::make_unique<LoadJalrInstruction>(bits, "lbu");
-    case 0x5: return std::make_unique<LoadJalrInstruction>(bits, "lhu");
+    case 0x0: return std::make_unique<ITypeLoadJalr>(bits, "lb");
+    case 0x1: return std::make_unique<ITypeLoadJalr>(bits, "lh");
+    case 0x2: return std::make_unique<ITypeLoadJalr>(bits, "lw");
+    case 0x4: return std::make_unique<ITypeLoadJalr>(bits, "lbu");
+    case 0x5: return std::make_unique<ITypeLoadJalr>(bits, "lhu");
     default: break;
   }
-  return std::make_unique<UnknownInstr>(bits);
+  return std::make_unique<Unknown>(bits);
 }
 
-auto InstructionDecoder::decodeITypeArithLogic(uint32_t bits) 
+auto InstructionDecoder::decodeITypeArithLogicShift(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   uint32_t funct7 = (bits >> 25) & 0x7F;
   switch (funct3) {
-    case 0x0: return std::make_unique<ArithLogicIInstruction>(bits, "addi");
+    case 0x0: return std::make_unique<ITypeArithLogic>(bits, "addi");
     case 0x1: 
-      if (funct7 == 0x00) { return std::make_unique<ShiftIInstruction>(bits, "slli"); }
+      if (funct7 == 0x00) { return std::make_unique<ITypeShift>(bits, "slli"); }
       break;
-    case 0x2: return std::make_unique<ArithLogicIInstruction>(bits, "slti");
-    case 0x3: return std::make_unique<ArithLogicIInstruction>(bits, "sltiu");
-    case 0x4: return std::make_unique<ArithLogicIInstruction>(bits, "xori");
+    case 0x2: return std::make_unique<ITypeArithLogic>(bits, "slti");
+    case 0x3: return std::make_unique<ITypeArithLogic>(bits, "sltiu");
+    case 0x4: return std::make_unique<ITypeArithLogic>(bits, "xori");
     case 0x5: 
-      if (funct7 == 0x00) { return std::make_unique<ShiftIInstruction>(bits, "srli"); }
-      if (funct7 == 0x20) { return std::make_unique<ShiftIInstruction>(bits, "srai"); }
+      if (funct7 == 0x00) { return std::make_unique<ITypeShift>(bits, "srli"); }
+      if (funct7 == 0x20) { return std::make_unique<ITypeShift>(bits, "srai"); }
       break;
-    case 0x6: return std::make_unique<ArithLogicIInstruction>(bits, "ori");
-    case 0x7: return std::make_unique<ArithLogicIInstruction>(bits, "andi");
+    case 0x6: return std::make_unique<ITypeArithLogic>(bits, "ori");
+    case 0x7: return std::make_unique<ITypeArithLogic>(bits, "andi");
     default: break;
   }
-  return std::make_unique<UnknownInstr>(bits);
+  return std::make_unique<Unknown>(bits);
 }
 
 auto InstructionDecoder::decodeITypeJump(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
-    case 0x0: return std::make_unique<LoadJalrInstruction>(bits, "jalr");
+    case 0x0: return std::make_unique<ITypeLoadJalr>(bits, "jalr");
     default: break;
   }
-  return std::make_unique<UnknownInstr>(bits);
+  return std::make_unique<Unknown>(bits);
 }
 
 auto InstructionDecoder::decodeSType(uint32_t bits)
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
-    case 0x0: return std::make_unique<SInstruction>(bits, "sb");
-    case 0x1: return std::make_unique<SInstruction>(bits, "sh");
-    case 0x2: return std::make_unique<SInstruction>(bits, "sw");
+    case 0x0: return std::make_unique<SType>(bits, "sb");
+    case 0x1: return std::make_unique<SType>(bits, "sh");
+    case 0x2: return std::make_unique<SType>(bits, "sw");
     default: break;
   }
-  return std::make_unique<UnknownInstr>(bits);
+  return std::make_unique<Unknown>(bits);
 }
 
 auto InstructionDecoder::decodeBType(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
-    case 0x0: return std::make_unique<BInstruction>(bits, "beq");
-    case 0x1: return std::make_unique<BInstruction>(bits, "bne");
-    case 0x4: return std::make_unique<BInstruction>(bits, "blt");
-    case 0x5: return std::make_unique<BInstruction>(bits, "bge");
-    case 0x6: return std::make_unique<BInstruction>(bits, "bltu");
-    case 0x7: return std::make_unique<BInstruction>(bits, "bgeu");
+    case 0x0: return std::make_unique<BType>(bits, "beq");
+    case 0x1: return std::make_unique<BType>(bits, "bne");
+    case 0x4: return std::make_unique<BType>(bits, "blt");
+    case 0x5: return std::make_unique<BType>(bits, "bge");
+    case 0x6: return std::make_unique<BType>(bits, "bltu");
+    case 0x7: return std::make_unique<BType>(bits, "bgeu");
     default: break;
   }
-  return std::make_unique<UnknownInstr>(bits);
+  return std::make_unique<Unknown>(bits);
 }
 
 auto InstructionDecoder::decodeJType(uint32_t bits)
   -> std::unique_ptr<Instruction> {
-  return std::make_unique<JInstruction>(bits, "jal");
+  return std::make_unique<JType>(bits, "jal");
 }
 
 auto InstructionDecoder::decodeUType(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t opcode = bits & 0x7F;
-  if (opcode == 0x37) { return std::make_unique<UInstruction>(bits, "lui"); }
-  if (opcode == 0x17) { return std::make_unique<UInstruction>(bits, "auipc"); }
-  return std::make_unique<UnknownInstr>(bits);
+  if (opcode == 0x37) { return std::make_unique<UType>(bits, "lui"); }
+  if (opcode == 0x17) { return std::make_unique<UType>(bits, "auipc"); }
+  return std::make_unique<Unknown>(bits);
 }
-

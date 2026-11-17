@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 
   try {
     Elf32Parser parser{argv[1]};
-    auto text_opt = parser.getText();
+    auto text_opt = parser.getTextRegion();
     if (!text_opt) {
       std::cerr << ".text/PT_LOAD 추출 실패\n";
       return EXIT_FAILURE;

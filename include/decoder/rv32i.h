@@ -14,7 +14,8 @@ public:
     : bits_(bits), mnemonic_(std::move(mne)) {}
   virtual ~Instruction() = default;
   [[nodiscard]]
-  virtual auto disassemble([[maybe_unused]] uint32_t pc) const -> std::string = 0;
+  virtual auto disassemble([[maybe_unused]] uint32_t pc) const 
+    -> std::string = 0;
 protected:
   uint32_t bits_;
   std::string mnemonic_;
@@ -29,12 +30,13 @@ public:
 private:
   static auto decodeRType(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeITypeLoad(uint32_t bits) -> std::unique_ptr<Instruction>; 
-  static auto decodeITypeArithLogic(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decodeITypeArithLogicShift(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeITypeJump(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeSType(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeBType(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeJType(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeUType(uint32_t bits) -> std::unique_ptr<Instruction>;
- };
+};
 
-#endif
+
+#endif // RV32I_H
