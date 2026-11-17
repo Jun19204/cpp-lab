@@ -11,52 +11,17 @@
 
 
 #if __has_include(<elf.h>)
-#include <elf.h>
+  #include <elf.h>
+  #define SYSTEM_HAS_ELF_H 1
 #else
-#define ELF_H
+  #define SYSTEM_HAS_ELF_H 0
+#endif 
+
+
+#if !SYSTEM_HAS_ELF_H
+
 #include <cstdint>
-struct Elf32_Ehdr;
-struct Elf32_Shdr;
-struct Elf32_Phdr;
-#endif // __has_include(<elf.h>)
 
-
-
-class Elf32Parser {
-public:
-  using size_type = std::vector<std::byte>::size_type;
-
-  explicit Elf32Parser(const std::filesystem::path& filepath);
-
-  [[nodiscard]] 
-  auto getSection(std::string_view sec_name) const
-    -> std::optional<std::span<const std::byte>>;
- 
-  [[nodiscard]] 
-  auto getSegment(std::string_view seg_name) const
-    -> std::optional<std::span<const std::byte>>;
-  
-  [[nodiscard]] 
-  auto getTextRegion() const
-    -> std::optional<std::span<const std::byte>>;
-
-private:
-  std::vector<std::byte> buffer_;
-
-  template <typename T> 
-  requires std::is_trivially_copyable_v<T>
-  [[nodiscard]] 
-  T readAt(size_t offset) const;
-  
-  [[nodiscard]] 
-  auto slice(size_t offset, size_t count) const
-    -> std::span<const std::byte>;
-  
-  void validateHeader() const;
-};
-
-
-#ifdef ELF_H
 struct Elf32_Ehdr {
   unsigned char e_ident[16];  /* Magic number and other info */
   uint16_t e_type;            /* Object file type */
@@ -111,6 +76,42 @@ struct Elf32_Phdr {
 #define PF_X		(1 << 0)	/* Segment is executable */
 #define PF_W		(1 << 1)	/* Segment is writable */
 #define PF_R		(1 << 2)	/* Segment is readable */
-#endif // ELF_H
+
+#endif // !SYSTEM_HAS_ELF_H
+
+
+class Elf32Parser {
+public:
+  using size_type = std::vector<std::byte>::size_type;
+
+  explicit Elf32Parser(const std::filesystem::path& filepath);
+
+  [[nodiscard]] 
+  auto getSection(std::string_view sec_name) const
+    -> std::optional<std::span<const std::byte>>;
+ 
+  [[nodiscard]] 
+  auto getSegment(std::string_view seg_name) const
+    -> std::optional<std::span<const std::byte>>;
+  
+  [[nodiscard]] 
+  auto getTextRegion() const
+    -> std::optional<std::span<const std::byte>>;
+
+private:
+  std::vector<std::byte> buffer_;
+
+  template <typename T> 
+  requires std::is_trivially_copyable_v<T>
+  [[nodiscard]] 
+  T readAt(size_t offset) const;
+  
+  [[nodiscard]] 
+  auto slice(size_t offset, size_t count) const
+    -> std::span<const std::byte>;
+  
+  void validateHeader() const;
+};
+
 
 #endif // ELF32_PARSER_H
