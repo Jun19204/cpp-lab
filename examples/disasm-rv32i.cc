@@ -99,9 +99,9 @@ int main(int argc, char **argv) {
     }
     
     // 디스어셈블 결과 출력 (열 정렬 포함)
-    std::println("-----------------------------------------------------");
-    std::println(" PC 주소      바이너리 코드   디스어셈블 결과");
-    std::println("-----------------------------------------------------");
+    std::println("---------------------------------------------------------");
+    std::println(" PC 가상 주소    바이너리       디스어셈블 결과");
+    std::println("---------------------------------------------------------");
     for (const auto& to_decode : to_decode_list) {
       auto decoded_instr = InstructionDecoder::decode(to_decode.bits_);
       
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
                                  ? std::format("0x{:04x}", to_decode.bits_)
                                  : std::format("0x{:08x}", to_decode.bits_);
       std::println(
-          "0x{:08x}   {:<13} {}",
+          "  0x{:08x}    {:<13} {}",
           to_decode.pc_,
           hex_bits,
           decoded_instr->disassemble(to_decode.pc_)
