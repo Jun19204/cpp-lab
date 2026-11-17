@@ -3,28 +3,33 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <utility>
 
 
 // 인스트럭션 최상위 추상 클래스
 class Instruction {
 public:
-  Instruction(uint32_t bits) : bits_(bits) {}
+  Instruction(uint32_t bits, std::string mne = "unknown") 
+    : bits_(bits), mnemonic_(std::move(mne)) {}
   virtual ~Instruction() = default;
   [[nodiscard]]
   virtual auto disassemble([[maybe_unused]] uint32_t pc) const -> std::string = 0;
 protected:
   uint32_t bits_;
+  std::string mnemonic_;
 };
 
 
 // 형식별 인스트럭션 객체 생성 팩토리
 class InstructionDecoder {
 public:
+  [[nodiscard]]
   static auto decode(uint32_t bits) -> std::unique_ptr<Instruction>;
 private:
   static auto decodeRType(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeITypeLoad(uint32_t bits) -> std::unique_ptr<Instruction>; 
-  static auto decodeITypeArith(uint32_t bits) -> std::unique_ptr<Instruction>;
+  static auto decodeITypeArithLogic(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeITypeJump(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeSType(uint32_t bits) -> std::unique_ptr<Instruction>;
   static auto decodeBType(uint32_t bits) -> std::unique_ptr<Instruction>;

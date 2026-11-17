@@ -47,8 +47,8 @@ auto Elf32Parser::getSection(std::string_view name) const
   const auto strtab_span = slice(strtab_hdr.sh_offset, strtab_hdr.sh_size);
 
   for (size_t i = 0; i < ehdr.e_shnum; ++i) {
-    const size_t shdr_offset = static_cast<size_t>(ehdr.e_shoff) +
-                               (i * ehdr.e_shentsize);
+    const size_t shdr_offset = static_cast<size_t>(ehdr.e_shoff) 
+                             + (i * ehdr.e_shentsize);
     const auto shdr = readAt<Elf32_Shdr>(shdr_offset);
     
     if (getStringAt(strtab_span, shdr.sh_name) == name) {
@@ -70,10 +70,10 @@ auto Elf32Parser::getSegment(std::string_view name) const
 
   for (size_t i = 0; i < ehdr.e_phnum; ++i) {
     const size_t phdr_offset = static_cast<size_t>(ehdr.e_phoff) 
-                               + (i * ehdr.e_phentsize);
+                             + (i * ehdr.e_phentsize);
     const auto phdr = readAt<Elf32_Phdr>(phdr_offset);
       
-    if (match_segment(phdr, name)) {
+    if (matchSegment(phdr, name)) {
       return slice(phdr.p_offset, phdr.p_filesz);
     }
   }
@@ -91,7 +91,7 @@ auto Elf32Parser::getText() const
 }
 
 
-bool Elf32Parser::match_segment(const Elf32_Phdr& phdr,std::string_view name) {
+bool Elf32Parser::matchSegment(const Elf32_Phdr& phdr,std::string_view name) {
   if (name == "LOAD_RX" || name == ".text") {
     return phdr.p_type == PT_LOAD && (phdr.p_flags & PF_X) != 0;
   }
@@ -116,7 +116,8 @@ bool Elf32Parser::match_segment(const Elf32_Phdr& phdr,std::string_view name) {
 }
 
 
-template <TriviallyCopyable T> 
+template <typename T> 
+requires std::is_trivially_copyable_v<T>
 T Elf32Parser::readAt(size_t offset) const {
   const auto bytes = slice(offset, sizeof(T));
   std::array<std::byte, sizeof(T)> raw{};

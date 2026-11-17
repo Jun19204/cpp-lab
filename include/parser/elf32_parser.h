@@ -23,17 +23,14 @@ class Elf32Parser {
 public:
   explicit Elf32Parser(const std::filesystem::path& filepath);
 
-  // 1. 섹션 이름으로 추출 (예: ".text", ".rodata", ".data")
   [[nodiscard]] 
   auto getSection(std::string_view name) const
     -> std::optional<std::span<const std::byte>>;
  
-  // 2. 세그먼트 식별 이름으로 추출 (예: "LOAD_RX", "LOAD_RW", "INTERP", "DYNAMIC")
   [[nodiscard]] 
   auto getSegment(std::string_view name) const
     -> std::optional<std::span<const std::byte>>;
   
-  // 3. 사용자 편의용 통합 함수 (.text 섹션 우선 -> 없으면 실행 세그먼트 폴백)
   [[nodiscard]] 
   auto getText() const
     -> std::optional<std::span<const std::byte>>;
@@ -43,7 +40,7 @@ private:
 
   // 문자열 이름과 Program Header의 타입/플래그 매칭
   [[nodiscard]] 
-  static bool match_segment(const Elf32_Phdr& phdr, std::string_view name);
+  static bool matchSegment(const Elf32_Phdr& phdr, std::string_view name);
   
   template <typename T> 
   requires std::is_trivially_copyable_v<T>
@@ -112,6 +109,10 @@ struct Elf32_Phdr {
 #define PT_PHDR		6		  /* Entry for header table itself */
 #define PT_TLS		7		  /* Thread-local storage segment */
 #define	PT_NUM		8		  /* Number of defined types */
+
+#define PF_X		(1 << 0)	/* Segment is executable */
+#define PF_W		(1 << 1)	/* Segment is writable */
+#define PF_R		(1 << 2)	/* Segment is readable */
 #endif // ELF_H
 
 #endif // ELF32_PARSER_H

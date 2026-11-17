@@ -10,7 +10,7 @@ namespace {
 class RInstruction : public Instruction {
 public:
   RInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic_(std::move(mne)) {
+    : Instruction(bits, std::move(mne)) {
     rd_     = (bits >> 7) & 0x1F;
     rs1_    = (bits >> 15) & 0x1F;
     rs2_    = (bits >> 20) & 0x1F;
@@ -22,15 +22,14 @@ public:
                        mnemonic_, rd_, rs1_, rs2_);
   }
 protected:
-  std::string mnemonic_;
   uint32_t rd_, rs1_, rs2_;
 };
 
 // I-Type 산술/논리 (rd, rs1, imm)
-class ArithIInstruction : public Instruction {
+class ArithLogicIInstruction : public Instruction {
 public:
-  ArithIInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic_(std::move(mne)) {
+  ArithLogicIInstruction(uint32_t bits, std::string mne) 
+    : Instruction(bits, std::move(mne)) {
     rd_  = (bits >> 7) & 0x1F;
     rs1_ = (bits >> 15) & 0x1F;
     imm_ = static_cast<int32_t>(bits) >> 20;
@@ -42,7 +41,6 @@ public:
                        mnemonic_, rd_, rs1_, imm_);
   }
 protected:
-  std::string mnemonic_;
   uint32_t rd_, rs1_;
   int32_t imm_;
 };
@@ -51,7 +49,7 @@ protected:
 class ShiftIInstruction : public Instruction {
 public:
   ShiftIInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic_(std::move(mne)) {
+    : Instruction(bits, std::move(mne)) {
     rd_    = (bits >> 7) & 0x1F;
     rs1_   = (bits >> 15) & 0x1F;
     shamt_ = (bits >> 20) & 0x1F;
@@ -63,7 +61,6 @@ public:
                        mnemonic_, rd_, rs1_, shamt_);
   }
 protected:
-  std::string mnemonic_;
   uint32_t rd_, rs1_, shamt_;
 };
 
@@ -71,7 +68,7 @@ protected:
 class LoadJalrInstruction : public Instruction {
 public:
   LoadJalrInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic_(std::move(mne)) {
+    : Instruction(bits, std::move(mne)) {
     rd_  = (bits >> 7) & 0x1F;
     rs1_ = (bits >> 15) & 0x1F;
     imm_ = static_cast<int32_t>(bits) >> 20;
@@ -83,7 +80,6 @@ public:
                        mnemonic_, rd_, imm_, rs1_);
   }
 protected:
-  std::string mnemonic_;
   uint32_t rd_, rs1_;
   int32_t imm_;
 };
@@ -92,7 +88,7 @@ protected:
 class SInstruction : public Instruction {
 public:
   SInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic_(std::move(mne)) {
+    : Instruction(bits, std::move(mne)) {
     rs1_ = (bits >> 15) & 0x1F;
     rs2_ = (bits >> 20) & 0x1F;
     uint32_t imm11_5 = (bits >> 25) & 0x7F;
@@ -107,7 +103,6 @@ public:
                        mnemonic_, rs2_, imm_, rs1_);
   }
 protected:
-  std::string mnemonic_;
   uint32_t rs1_, rs2_;
   int32_t imm_;
 };
@@ -116,7 +111,7 @@ protected:
 class BInstruction : public Instruction {
 public:
   BInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic_(std::move(mne)) {
+    : Instruction(bits, std::move(mne)) {
     rs1_ = (bits >> 15) & 0x1F;
     rs2_ = (bits >> 20) & 0x1F;
     uint32_t imm12   = (bits >> 31) & 0x01;
@@ -137,7 +132,6 @@ public:
                        mnemonic_, rs1_, rs2_, target);
   }
 protected:
-  std::string mnemonic_;
   uint32_t rs1_, rs2_;
   int32_t imm_;
 };
@@ -146,7 +140,7 @@ protected:
 class JInstruction : public Instruction {
 public:
   JInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic_(std::move(mne)) {
+    : Instruction(bits, std::move(mne)) {
     rd_ = (bits >> 7) & 0x1F;
     uint32_t imm_31    = (bits >> 31) & 0x1;
     uint32_t imm_30_21 = (bits >> 21) & 0x3FF;
@@ -166,7 +160,6 @@ public:
                        mnemonic_, rd_, target);
   }
 protected:
-  std::string mnemonic_;
   uint32_t rd_;
   int32_t imm_;
 };
@@ -175,7 +168,7 @@ protected:
 class UInstruction : public Instruction {
 public:
   UInstruction(uint32_t bits, std::string mne) 
-    : Instruction(bits), mnemonic_(std::move(mne)) {
+    : Instruction(bits, std::move(mne)) {
     rd_ = (bits >> 7) & 0x1F;
     imm_ = static_cast<int32_t>(bits & 0xFFFFF000);
   }
@@ -190,7 +183,6 @@ public:
                        mnemonic_, rd_, val);
   }
 protected:
-  std::string mnemonic_;
   uint32_t rd_;
   int32_t imm_;
 };
@@ -209,7 +201,7 @@ public:
 // Opcode 열거형
 enum class Opcode : uint8_t {
   RType = 0x33,
-  ITypeArith = 0x13,
+  ITypeArithLogic = 0x13,
   ITypeLoad = 0x03,
   ITypeJump = 0x67,
   SType = 0x23,
@@ -219,7 +211,7 @@ enum class Opcode : uint8_t {
   JType = 0x6F
 };
 
-}
+} // namespace
 
 
 auto InstructionDecoder::decode(uint32_t bits) 
@@ -228,7 +220,7 @@ auto InstructionDecoder::decode(uint32_t bits)
   switch (opcode) {
     case Opcode::RType: return decodeRType(bits);
     case Opcode::ITypeLoad: return decodeITypeLoad(bits);
-    case Opcode::ITypeArith: return decodeITypeArith(bits);
+    case Opcode::ITypeArithLogic: return decodeITypeArithLogic(bits);
     case Opcode::ITypeJump: return decodeITypeJump(bits);
     case Opcode::SType: return decodeSType(bits);
     case Opcode::BType: return decodeBType(bits);
@@ -278,24 +270,24 @@ auto InstructionDecoder::decodeITypeLoad(uint32_t bits)
   return std::make_unique<UnknownInstr>(bits);
 }
 
-auto InstructionDecoder::decodeITypeArith(uint32_t bits) 
+auto InstructionDecoder::decodeITypeArithLogic(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   uint32_t funct7 = (bits >> 25) & 0x7F;
   switch (funct3) {
-    case 0x0: return std::make_unique<ArithIInstruction>(bits, "addi");
+    case 0x0: return std::make_unique<ArithLogicIInstruction>(bits, "addi");
     case 0x1: 
       if (funct7 == 0x00) { return std::make_unique<ShiftIInstruction>(bits, "slli"); }
       break;
-    case 0x2: return std::make_unique<ArithIInstruction>(bits, "slti");
-    case 0x3: return std::make_unique<ArithIInstruction>(bits, "sltiu");
-    case 0x4: return std::make_unique<ArithIInstruction>(bits, "xori");
+    case 0x2: return std::make_unique<ArithLogicIInstruction>(bits, "slti");
+    case 0x3: return std::make_unique<ArithLogicIInstruction>(bits, "sltiu");
+    case 0x4: return std::make_unique<ArithLogicIInstruction>(bits, "xori");
     case 0x5: 
       if (funct7 == 0x00) { return std::make_unique<ShiftIInstruction>(bits, "srli"); }
       if (funct7 == 0x20) { return std::make_unique<ShiftIInstruction>(bits, "srai"); }
       break;
-    case 0x6: return std::make_unique<ArithIInstruction>(bits, "ori");
-    case 0x7: return std::make_unique<ArithIInstruction>(bits, "andi");
+    case 0x6: return std::make_unique<ArithLogicIInstruction>(bits, "ori");
+    case 0x7: return std::make_unique<ArithLogicIInstruction>(bits, "andi");
     default: break;
   }
   return std::make_unique<UnknownInstr>(bits);
