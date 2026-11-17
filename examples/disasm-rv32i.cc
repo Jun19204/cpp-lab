@@ -71,10 +71,10 @@ int main(int argc, char **argv) {
     const auto text_region = *text_opt;
     std::vector<ToDecodeInstrInfo> to_decode_list;
     size_t pos = 0;
-    uint32_t pc = 0x00000000;
+    uint32_t pc = text_region.begin_vma_;
     
-    while (pos < text_region.size()) {
-      const auto half = readLE<uint16_t>(text_region, pos);
+    while (pos < text_region.data_.size()) {
+      const auto half = readLE<uint16_t>(text_region.data_, pos);
       uint32_t raw_instr = 0;
       size_t instr_len = 0;
       
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
         instr_len = 2;
       } else {
         // 32비트 표준 명령어
-        raw_instr = readLE<uint32_t>(text_region, pos);
+        raw_instr = readLE<uint32_t>(text_region.data_, pos);
         instr_len = 4;
       }
       
@@ -98,9 +98,9 @@ int main(int argc, char **argv) {
       pc += static_cast<uint32_t>(instr_len);
     }
     
-    // 디스어셈블 결과 출력 (열 정렬 포함)
+    // 디스어셈블 결과 출력
     std::println("---------------------------------------------------------");
-    std::println(" PC 가상 주소    바이너리       디스어셈블 결과");
+    std::println("   PC(VMA)      바이너리       디스어셈블 결과");
     std::println("---------------------------------------------------------");
     for (const auto& to_decode : to_decode_list) {
       auto decoded_instr = InstructionDecoder::decode(to_decode.bits_);
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
                                  ? std::format("0x{:04x}", to_decode.bits_)
                                  : std::format("0x{:08x}", to_decode.bits_);
       std::println(
-          "  0x{:08x}    {:<13} {}",
+          " 0x{:08x}    {:<13} {}",
           to_decode.pc_,
           hex_bits,
           decoded_instr->disassemble(to_decode.pc_)

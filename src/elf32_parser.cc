@@ -80,7 +80,7 @@ Elf32Parser::Elf32Parser(const std::filesystem::path& filepath) {
 
 
 auto Elf32Parser::getSection(std::string_view sec_name) const 
-  -> std::optional<std::span<const std::byte>> {
+  -> std::optional<BinaryRegion> {
   const auto ehdr = readAt<Elf32_Ehdr>(0);
 
   if (ehdr.e_shoff == 0 || ehdr.e_shnum == 0 ||
@@ -100,7 +100,10 @@ auto Elf32Parser::getSection(std::string_view sec_name) const
     const auto shdr = readAt<Elf32_Shdr>(shdr_offset);
     
     if (getStringAt(strtab_span, shdr.sh_name) == sec_name) {
-      return slice(shdr.sh_offset, shdr.sh_size);
+      return BinaryRegion{
+        .data_ = slice(shdr.sh_offset, shdr.sh_size),
+        .begin_vma_ = shdr.sh_addr
+      };
     }
   }
 
@@ -109,7 +112,7 @@ auto Elf32Parser::getSection(std::string_view sec_name) const
 
 
 auto Elf32Parser::getSegment(std::string_view seg_name) const 
-  -> std::optional<std::span<const std::byte>> {
+  -> std::optional<BinaryRegion> {
   const auto ehdr = readAt<Elf32_Ehdr>(0);
 
   if (ehdr.e_phoff == 0 || ehdr.e_phnum == 0) {
@@ -122,7 +125,10 @@ auto Elf32Parser::getSegment(std::string_view seg_name) const
     const auto phdr = readAt<Elf32_Phdr>(phdr_offset);
       
     if (isSegmentMatching(phdr, seg_name)) {
-      return slice(phdr.p_offset, phdr.p_filesz);
+      return BinaryRegion{
+        .data_ = slice(phdr.p_offset, phdr.p_filesz),
+        .begin_vma_ = phdr.p_vaddr
+      };
     }
   }
 
@@ -131,7 +137,7 @@ auto Elf32Parser::getSegment(std::string_view seg_name) const
 
 
 auto Elf32Parser::getTextRegion() const
-  -> std::optional<std::span<const std::byte>> {
+  -> std::optional<BinaryRegion> {
   if (auto sec_opt = getSection(".text")) {
     return sec_opt;
   }

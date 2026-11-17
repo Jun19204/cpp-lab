@@ -80,6 +80,12 @@ struct Elf32_Phdr {
 #endif // !SYSTEM_HAS_ELF_H
 
 
+struct BinaryRegion {
+  std::span<const std::byte> data_;
+  uint32_t begin_vma_;
+};
+
+
 class Elf32Parser {
 public:
   using size_type = std::vector<std::byte>::size_type;
@@ -88,15 +94,15 @@ public:
 
   [[nodiscard]] 
   auto getSection(std::string_view sec_name) const
-    -> std::optional<std::span<const std::byte>>;
+    -> std::optional<BinaryRegion>;
  
   [[nodiscard]] 
   auto getSegment(std::string_view seg_name) const
-    -> std::optional<std::span<const std::byte>>;
+    -> std::optional<BinaryRegion>;
   
   [[nodiscard]] 
   auto getTextRegion() const
-    -> std::optional<std::span<const std::byte>>;
+    -> std::optional<BinaryRegion>;
 
 private:
   std::vector<std::byte> buffer_;
