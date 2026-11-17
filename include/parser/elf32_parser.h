@@ -7,7 +7,6 @@
 #include <string_view>
 #include <vector>
 #include <cstddef>
-#include <cstdint>
 #include <type_traits>
 
 
@@ -15,6 +14,7 @@
 #include <elf.h>
 #else
 #define ELF_H
+#include <cstdint>
 struct Elf32_Ehdr;
 struct Elf32_Shdr;
 struct Elf32_Phdr;
