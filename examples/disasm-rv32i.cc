@@ -36,16 +36,16 @@ T readLE(std::span<const std::byte> data, size_t offset) {
   if (offset > data.size() || sizeof(T) > data.size() - offset) {
     throw std::out_of_range(
         std::format("readLE 범위 초과: offset={}, size={}, data_size={}",
-                                         offset, sizeof(T), data.size())
+                                        offset, sizeof(T), data.size())
     );
   }
-  std::array<std::byte, sizeof(T)> temp_buffer{};
+  std::array<std::byte, sizeof(T)> raw_buffer{};
   std::copy_n(
       data.begin() + static_cast<ptrdiff_t>(offset), 
       sizeof(T), 
-      temp_buffer.begin()
+      raw_buffer.begin()
   );
-  return std::bit_cast<T>(temp_buffer);
+  return std::bit_cast<T>(raw_buffer);
 }
 
 } // namespace
@@ -54,7 +54,7 @@ T readLE(std::span<const std::byte> data, size_t offset) {
 
 int main(int argc, char **argv) {
   if (argc != 2) {
-    std::cerr << "사용법: disasm-rv32i <file_path>\n";
+    std::cerr << "사용법: ./disasm-rv32i <file_path>\n";
     return EXIT_FAILURE;
   }
 

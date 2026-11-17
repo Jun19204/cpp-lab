@@ -39,12 +39,12 @@ bool matchSegment(const Elf32_Phdr& phdr,std::string_view name) {
 }
 
 [[nodiscard]]
-auto getStringAt(std::span<const std::byte> strtab, size_t offset) 
+auto getStringAt(std::span<const std::byte> strtab, size_t pos) 
   -> std::string_view {
-  if (offset >= strtab.size()) {
+  if (pos >= strtab.size()) {
     return {};
   }
-  const auto sub = strtab.subspan(offset);
+  const auto sub = strtab.subspan(pos);
   const auto iter = std::find(sub.begin(), sub.end(), std::byte{0});
   const auto len = static_cast<size_t>(std::distance(sub.begin(), iter));
   return {reinterpret_cast<const char*>(sub.data()), len};
@@ -132,13 +132,14 @@ auto Elf32Parser::getText() const
 }
 
 
+// 자명하게 복사가능한 타입(가상함수나 복잡한 생성자가 없는 타입)
 template <typename T> 
 requires std::is_trivially_copyable_v<T>
 T Elf32Parser::readAt(size_t offset) const {
   const auto bytes = slice(offset, sizeof(T));
-  std::array<std::byte, sizeof(T)> raw{};
-  std::copy(bytes.begin(), bytes.end(), raw.begin());
-  return std::bit_cast<T>(raw);
+  std::array<std::byte, sizeof(T)> raw_buffer{};
+  std::copy(bytes.begin(), bytes.end(), raw_buffer.begin()); // raw_buffer{0xFF, 0x00}
+  return std::bit_cast<T>(raw_buffer);                       // {0x00FF}
 }
 
 
@@ -163,9 +164,12 @@ void Elf32Parser::validateHeader() const {
     throw std::runtime_error("32비트 ELF 파일만 지원합니다.");
   }
   
-  const bool is_little_endian = (ehdr.e_ident[5] == 1);
-  if ((std::endian::native == std::endian::little) != is_little_endian) {
-    throw std::runtime_error("호스트와 ELF 파일의 엔디안이 일치하지 않습니다.");
+  const auto elf_endian = (ehdr.e_ident[5] == 1) 
+                        ? std::endian::little 
+                        : std::endian::big;
+  if (std::endian::native != elf_endian) {
+    throw std::runtime_error(
+        "호스트와 ELF 파일의 엔디안이 일치하지 않습니다.");
   }
 }
 
