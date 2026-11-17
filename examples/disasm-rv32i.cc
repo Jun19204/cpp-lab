@@ -2,19 +2,21 @@
 #include "parser/elf32_parser.h"
 
 #include <array>
+#include <string>
+#include <vector>
+#include <span>
 #include <bit>
-#include <concepts>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
-#include <exception>
-#include <iostream>
-#include <span>
-#include <string>
-#include <type_traits>
-#include <vector>
 #include <format>
 #include <print>
+#include <iostream>
+#include <exception>
+#include <stdexcept>
+#include <concepts>
+#include <type_traits>
 
 
 namespace {

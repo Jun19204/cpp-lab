@@ -1,12 +1,15 @@
 #ifndef ELF32_PARSER_H
 #define ELF32_PARSER_H
 
-#include <cstring>
 #include <filesystem>
 #include <optional>
 #include <span>
 #include <string_view>
 #include <vector>
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
+
 
 #if __has_include(<elf.h>)
 #include <elf.h>
@@ -65,6 +68,7 @@ struct Elf32_Ehdr {
   uint32_t e_flags;           /* Processor-specific flags */
   uint16_t e_ehsize;          /* ELF header size in bytes */
   uint16_t e_phentsize;       /* Program header table entry size */
+  uint16_t e_phnum;           /* Program header table entry count */
   uint16_t e_shentsize;       /* Section header table entry size */
   uint16_t e_shnum;           /* Section header table entry count */
   uint16_t e_shstrndx;        /* Section header string table index */

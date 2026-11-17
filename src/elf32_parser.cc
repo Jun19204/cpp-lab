@@ -3,14 +3,17 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <optional>
 #include <span>
 #include <stdexcept>
+#include <type_traits>
 #include <string_view>
 #include <vector>
+#include <iterator>
 
 
 namespace {
