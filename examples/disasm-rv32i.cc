@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
       size_t instr_len = 0;
       
       if ((half & 0x3) != 0x3) {
-        // 16비트 압축 명령어 (RVC)
+        // 16비트 압축 명령어
         raw_instr = static_cast<uint32_t>(half);
         instr_len = 2;
       } else {
