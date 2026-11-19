@@ -10,9 +10,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstdio>
 #include <format>
 #include <print>
-#include <iostream>
 #include <exception>
 #include <stdexcept>
 #include <concepts>
@@ -56,9 +56,9 @@ T readLE(std::span<const std::byte> data, size_t offset) {
 
 int main(int argc, char** argv) {
   if (argc != 2) {
-    std::cerr << "<사용법>\n"
-              << "Linux/Unix: ./경로/disasm-rv32i <ELF 파일>\n"
-              << "Windows: 경로\\disasm-rv32i.exe <ELF 파일>\n";
+    std::println(stderr, "<사용법>");
+    std::println(stderr, "Linux/Unix: ./경로/disasm-rv32i <ELF 파일>");
+    std::println(stderr, "Windows: 경로\\disasm-rv32i.exe <ELF 파일>");
     return EXIT_FAILURE;
   }
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     Elf32Parser parser{argv[1]};
     auto text_opt = parser.getTextRegion();
     if (!text_opt) {
-      std::cerr << "Text영역 추출 실패\n";
+      std::println(stderr, "Text영역 추출 실패");
       return EXIT_FAILURE;
     }
     
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
     std::println("   PC(VMA)      바이너리       디스어셈블 결과");
     std::println("---------------------------------------------------------");
     for (const auto& to_decode : to_decode_list) {
-      auto decoded_instr = InstructionDecoder::decode(to_decode.bits_);
+      auto decoded_instr = Rv32iDecoder::decode(to_decode.bits_);
       
       const std::string hex_bits = (to_decode.length_ == 2)
                                  ? std::format("0x{:04x}", to_decode.bits_)
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
       );
     }
   } catch (const std::exception& e) {
-    std::cerr << "오류 발생: " << e.what() << "\n";
+    std::println(stderr, "런타임 오류: {}", e.what());
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;

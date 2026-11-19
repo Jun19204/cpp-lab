@@ -81,7 +81,7 @@
 // 바이너리 영역 래핑 구조체
 struct BinaryRegion {
   std::span<const std::byte> data_;
-  uint32_t begin_vma_;
+  const uint32_t begin_vma_;
 };
 
 

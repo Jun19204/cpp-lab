@@ -1,5 +1,5 @@
-#ifndef RV32I_H
-#define RV32I_H
+#ifndef RV32I_DECODER_H
+#define RV32I_DECODER_H
 
 #include <cstdint>
 #include <memory>
@@ -23,7 +23,7 @@ protected:
 
 
 // 인스트럭션 포맷별 디코드 함수 팩토리
-class InstructionDecoder {
+class Rv32iDecoder {
 public:
   [[nodiscard]]
   static auto decode(uint32_t bits) -> std::unique_ptr<Instruction>;

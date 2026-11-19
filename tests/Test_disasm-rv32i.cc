@@ -26,7 +26,7 @@ TEST(DisasmIntegrationTest, DumpTestBinary) {
   std::cout << "-----------------------------------------------------\n";
 
   for (std::uint32_t bits : instructions) {
-    auto instr = InstructionDecoder::decode(bits);
+    auto instr = Rv32iDecoder::decode(bits);
     std::cout << "0x" << std::setw(8) << std::setfill('0') << std::hex << pc
               << "    "
               << "0x" << std::setw(8) << std::setfill('0') << std::hex << bits

@@ -208,7 +208,7 @@ enum class Opcode : uint8_t {
 } // namespace
 
 
-auto InstructionDecoder::decode(uint32_t bits) 
+auto Rv32iDecoder::decode(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   auto opcode = static_cast<Opcode>(bits & 0x7F);
   switch (opcode) {
@@ -226,7 +226,7 @@ auto InstructionDecoder::decode(uint32_t bits)
   return std::make_unique<Unknown>(bits);
 }
 
-auto InstructionDecoder::decodeRType(uint32_t bits) 
+auto Rv32iDecoder::decodeRType(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   uint32_t funct7 = (bits >> 25) & 0x7F;
@@ -250,7 +250,7 @@ auto InstructionDecoder::decodeRType(uint32_t bits)
   return std::make_unique<Unknown>(bits);
 }
 
-auto InstructionDecoder::decodeITypeLoad(uint32_t bits) 
+auto Rv32iDecoder::decodeITypeLoad(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
@@ -264,7 +264,7 @@ auto InstructionDecoder::decodeITypeLoad(uint32_t bits)
   return std::make_unique<Unknown>(bits);
 }
 
-auto InstructionDecoder::decodeITypeArithLogicShift(uint32_t bits) 
+auto Rv32iDecoder::decodeITypeArithLogicShift(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   uint32_t funct7 = (bits >> 25) & 0x7F;
@@ -287,7 +287,7 @@ auto InstructionDecoder::decodeITypeArithLogicShift(uint32_t bits)
   return std::make_unique<Unknown>(bits);
 }
 
-auto InstructionDecoder::decodeITypeJump(uint32_t bits) 
+auto Rv32iDecoder::decodeITypeJump(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
@@ -297,7 +297,7 @@ auto InstructionDecoder::decodeITypeJump(uint32_t bits)
   return std::make_unique<Unknown>(bits);
 }
 
-auto InstructionDecoder::decodeSType(uint32_t bits)
+auto Rv32iDecoder::decodeSType(uint32_t bits)
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
@@ -309,7 +309,7 @@ auto InstructionDecoder::decodeSType(uint32_t bits)
   return std::make_unique<Unknown>(bits);
 }
 
-auto InstructionDecoder::decodeBType(uint32_t bits) 
+auto Rv32iDecoder::decodeBType(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t funct3 = (bits >> 12) & 0x07;
   switch (funct3) {
@@ -324,12 +324,12 @@ auto InstructionDecoder::decodeBType(uint32_t bits)
   return std::make_unique<Unknown>(bits);
 }
 
-auto InstructionDecoder::decodeJType(uint32_t bits)
+auto Rv32iDecoder::decodeJType(uint32_t bits)
   -> std::unique_ptr<Instruction> {
   return std::make_unique<JType>(bits, "jal");
 }
 
-auto InstructionDecoder::decodeUType(uint32_t bits) 
+auto Rv32iDecoder::decodeUType(uint32_t bits) 
   -> std::unique_ptr<Instruction> {
   uint32_t opcode = bits & 0x7F;
   if (opcode == 0x37) { return std::make_unique<UType>(bits, "lui"); }
