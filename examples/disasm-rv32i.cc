@@ -22,9 +22,9 @@
 namespace {
 
 struct ToDecodeInstrInfo {
-  uint32_t pc_;
-  uint32_t bits_;
-  size_t length_; // 2 or 4 bytes
+  const uint32_t pc_;
+  const uint32_t bits_;
+  const size_t length_;
 };
 
 template <typename T>
@@ -54,9 +54,11 @@ T readLE(std::span<const std::byte> data, size_t offset) {
 
 
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc != 2) {
-    std::cerr << "사용법: ./disasm-rv32i <file_path>\n";
+    std::cerr << "<사용법>\n"
+              << "Linux/Unix: ./경로/disasm-rv32i <ELF 파일>\n"
+              << "Windows: 경로\\disasm-rv32i.exe <ELF 파일>\n";
     return EXIT_FAILURE;
   }
 
@@ -64,7 +66,7 @@ int main(int argc, char **argv) {
     Elf32Parser parser{argv[1]};
     auto text_opt = parser.getTextRegion();
     if (!text_opt) {
-      std::cerr << ".text/PT_LOAD 추출 실패\n";
+      std::cerr << "Text영역 추출 실패\n";
       return EXIT_FAILURE;
     }
     
@@ -74,16 +76,14 @@ int main(int argc, char **argv) {
     uint32_t pc = text_region.begin_vma_;
     
     while (pos < text_region.data_.size()) {
-      const auto half = readLE<uint16_t>(text_region.data_, pos);
       uint32_t raw_instr = 0;
       size_t instr_len = 0;
+      const auto half = readLE<uint16_t>(text_region.data_, pos);
       
-      if ((half & 0x3) != 0x3) {
-        // 16비트 압축 명령어
+      if ((half & 0x3) != 0x3) { // 16비트 압축 명령어
         raw_instr = static_cast<uint32_t>(half);
         instr_len = 2;
-      } else {
-        // 32비트 표준 명령어
+      } else { // 32비트 표준 명령어
         raw_instr = readLE<uint32_t>(text_region.data_, pos);
         instr_len = 4;
       }

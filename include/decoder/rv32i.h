@@ -17,12 +17,12 @@ public:
   virtual auto disassemble([[maybe_unused]] uint32_t pc) const 
     -> std::string = 0;
 protected:
-  uint32_t bits_;
-  std::string mnemonic_;
+  const uint32_t bits_;
+  const std::string mnemonic_;
 };
 
 
-// 형식별 인스트럭션 객체 생성 팩토리
+// 인스트럭션 포맷별 디코드 함수 팩토리
 class InstructionDecoder {
 public:
   [[nodiscard]]
@@ -39,4 +39,4 @@ private:
 };
 
 
-#endif // RV32I_H
+#endif

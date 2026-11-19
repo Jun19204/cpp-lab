@@ -145,14 +145,13 @@ auto Elf32Parser::getTextRegion() const
 }
 
 
-// 자명하게 복사가능한 타입(가상함수나 복잡한 생성자가 없는 타입)
 template <typename T> 
 requires std::is_trivially_copyable_v<T>
 T Elf32Parser::readAt(size_t offset) const {
   const auto bytes = slice(offset, sizeof(T));
   std::array<std::byte, sizeof(T)> raw_buffer{};
-  std::copy(bytes.begin(), bytes.end(), raw_buffer.begin()); // raw_buffer{0xFF, 0x00}
-  return std::bit_cast<T>(raw_buffer);                       // {0x00FF}
+  std::copy(bytes.begin(), bytes.end(), raw_buffer.begin());
+  return std::bit_cast<T>(raw_buffer);
 }
 
 
@@ -173,7 +172,7 @@ void Elf32Parser::validateHeader() const {
     throw std::runtime_error("유효한 ELF 파일이 아닙니다.");
   }
   
-  if (ehdr.e_ident[4] != 1) { // ELFCLASS32
+  if (ehdr.e_ident[4] != 1) { // ELFCLASS32가 아닌 경우
     throw std::runtime_error("32비트 ELF 파일만 지원합니다.");
   }
   

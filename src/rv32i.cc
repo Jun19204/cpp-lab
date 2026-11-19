@@ -9,7 +9,7 @@
 
 namespace {
 
-// R-Type (rd, rs1, rs2)
+// R-Type
 class RType final : public Instruction {
 public:
   RType(uint32_t bits, std::string mne) 
@@ -28,7 +28,7 @@ protected:
   uint32_t rd_, rs1_, rs2_;
 };
 
-// I-Type 산술/논리 (rd, rs1, imm)
+// I-Type 산술/논리
 class ITypeArithLogic : public Instruction {
 public:
   ITypeArithLogic(uint32_t bits, std::string mne) 
@@ -48,7 +48,7 @@ protected:
   int32_t imm_;
 };
 
-// I-Type Load 및 Jalr (rd, imm(rs1))
+// I-Type Load/Jalr
 class ITypeLoadJalr final : public ITypeArithLogic {
 public:
   using ITypeArithLogic::ITypeArithLogic;
@@ -60,7 +60,7 @@ public:
   }
 };
 
-// I-Type 시프트 (rd, rs1, shamt)
+// I-Type 시프트
 class ITypeShift final : public Instruction {
 public:
   ITypeShift(uint32_t bits, std::string mne) 
@@ -79,7 +79,7 @@ protected:
   uint32_t rd_, rs1_, shamt_;
 };
 
-// S-Type (rs2, imm(rs1))
+// S-Type
 class SType final : public Instruction {
 public:
   SType(uint32_t bits, std::string mne) 
@@ -102,7 +102,7 @@ protected:
   int32_t imm_;
 };
 
-// B-Type (rs1, rs2, pc + imm)
+// B-Type
 class BType final : public Instruction {
 public:
   BType(uint32_t bits, std::string mne) 
@@ -122,7 +122,7 @@ public:
   [[nodiscard]]
   auto disassemble(uint32_t pc) const 
     -> std::string override {
-    auto target = static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_);
+    auto target = pc + static_cast<uint32_t>(imm_);
     return std::format("{:<7} x{}, x{}, 0x{:08x}", 
                        mnemonic_, rs1_, rs2_, target);
   }
@@ -131,7 +131,7 @@ protected:
   int32_t imm_;
 };
 
-// J-Type (rd, pc + imm)
+// J-Type
 class JType final : public Instruction {
 public:
   JType(uint32_t bits, std::string mne) 
@@ -150,7 +150,7 @@ public:
   [[nodiscard]]
   auto disassemble(uint32_t pc) const
     -> std::string override {
-    auto target = static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_);
+    auto target = pc + static_cast<uint32_t>(imm_);
     return std::format("{:<7} x{}, 0x{:08x}", 
                        mnemonic_, rd_, target);
   }
@@ -159,7 +159,7 @@ protected:
   int32_t imm_;
 };
 
-// U-Type (lui: imm, auipc: pc + imm)
+// U-Type
 class UType final : public Instruction {
 public:
   UType(uint32_t bits, std::string mne) 
@@ -171,7 +171,7 @@ public:
   auto disassemble(uint32_t pc) const 
     -> std::string override {
     uint32_t val = (mnemonic_ == "auipc")
-                 ? static_cast<uint32_t>(static_cast<int32_t>(pc) + imm_) 
+                 ? pc + static_cast<uint32_t>(imm_) 
                  : static_cast<uint32_t>(imm_);
     return std::format("{:<7} x{}, 0x{:08x}", 
                        mnemonic_, rd_, val);
@@ -181,7 +181,7 @@ protected:
   int32_t imm_;
 };
 
-// 미정의 명령어 형식
+// 미정의 인스트럭션 포맷
 class Unknown final : public Instruction {
 public:
   using Instruction::Instruction;

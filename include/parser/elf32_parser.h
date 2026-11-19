@@ -19,65 +19,63 @@
 
 
 #if !SYSTEM_HAS_ELF_H
+  #include <cstdint>
 
-#include <cstdint>
+  struct Elf32_Ehdr {
+    unsigned char e_ident[16];  /* Magic number and other info */
+    uint16_t e_type;            /* Object file type */
+    uint16_t e_machine;         /* Architecture */
+    uint32_t e_version;         /* Object file version */
+    uint32_t e_entry;           /* Entry point virtual address */
+    uint32_t e_phoff;           /* Program header table file offset */
+    uint32_t e_shoff;           /* Section header table file offset */
+    uint32_t e_flags;           /* Processor-specific flags */
+    uint16_t e_ehsize;          /* ELF header size in bytes */
+    uint16_t e_phentsize;       /* Program header table entry size */
+    uint16_t e_phnum;           /* Program header table entry count */
+    uint16_t e_shentsize;       /* Section header table entry size */
+    uint16_t e_shnum;           /* Section header table entry count */
+    uint16_t e_shstrndx;        /* Section header string table index */
+  };
 
-struct Elf32_Ehdr {
-  unsigned char e_ident[16];  /* Magic number and other info */
-  uint16_t e_type;            /* Object file type */
-  uint16_t e_machine;         /* Architecture */
-  uint32_t e_version;         /* Object file version */
-  uint32_t e_entry;           /* Entry point virtual address */
-  uint32_t e_phoff;           /* Program header table file offset */
-  uint32_t e_shoff;           /* Section header table file offset */
-  uint32_t e_flags;           /* Processor-specific flags */
-  uint16_t e_ehsize;          /* ELF header size in bytes */
-  uint16_t e_phentsize;       /* Program header table entry size */
-  uint16_t e_phnum;           /* Program header table entry count */
-  uint16_t e_shentsize;       /* Section header table entry size */
-  uint16_t e_shnum;           /* Section header table entry count */
-  uint16_t e_shstrndx;        /* Section header string table index */
-};
+  struct Elf32_Shdr {
+    uint32_t sh_name;       /* Section name (string tbl index) */
+    uint32_t sh_type;       /* Section type */
+    uint32_t sh_flags;      /* Section flags */
+    uint32_t sh_addr;       /* Section virtual addr at execution */
+    uint32_t sh_offset;     /* Section file offset */
+    uint32_t sh_size;       /* Section size in bytes */
+    uint32_t sh_link;       /* Link to another section */
+    uint32_t sh_info;       /* Additional section information */
+    uint32_t sh_addralign;  /* Section alignment */
+    uint32_t sh_entsize;    /* Entry size if section holds table */
+  };
 
-struct Elf32_Shdr {
-  uint32_t sh_name;     /* Section name (string tbl index) */
-  uint32_t sh_type;     /* Section type */
-  uint32_t sh_flags;    /* Section flags */
-  uint32_t sh_addr;     /* Section virtual addr at execution */
-  uint32_t sh_offset;   /* Section file offset */
-  uint32_t sh_size;     /* Section size in bytes */
-  uint32_t sh_link;     /* Link to another section */
-  uint32_t sh_info;     /* Additional section information */
-  uint32_t sh_addralign;  /* Section alignment */
-  uint32_t sh_entsize;  /* Entry size if section holds table */
-};
+  struct Elf32_Phdr {
+    uint32_t p_type;    	/* Segment type */
+    uint32_t p_offset;   	/* Segment file offset */
+    uint32_t p_vaddr;     /* Segment virtual address */
+    uint32_t p_paddr;     /* Segment physical address */
+    uint32_t p_filesz;    /* Segment size in file */
+    uint32_t p_memsz;     /* Segment size in memory */
+    uint32_t p_flags;     /* Segment flags */
+    uint32_t p_align;     /* Segment alignment */
+  };
 
-struct Elf32_Phdr {
-  uint32_t p_type;    	/* Segment type */
-  uint32_t p_offset;   	/* Segment file offset */
-  uint32_t p_vaddr;     /* Segment virtual address */
-  uint32_t p_paddr;     /* Segment physical address */
-  uint32_t p_filesz;    /* Segment size in file */
-  uint32_t p_memsz;     /* Segment size in memory */
-  uint32_t p_flags;     /* Segment flags */
-  uint32_t p_align;     /* Segment alignment */
-};
+  #define	PT_NULL		0		  /* Program header table entry unused */
+  #define PT_LOAD		1		  /* Loadable program segment */
+  #define PT_DYNAMIC	2		/* Dynamic linking information */
+  #define PT_INTERP	3		  /* Program interpreter */
+  #define PT_NOTE		4		  /* Auxiliary information */
+  #define PT_SHLIB	5		  /* Reserved */
+  #define PT_PHDR		6		  /* Entry for header table itself */
+  #define PT_TLS		7		  /* Thread-local storage segment */
+  #define	PT_NUM		8		  /* Number of defined types */
 
-#define	PT_NULL		0		  /* Program header table entry unused */
-#define PT_LOAD		1		  /* Loadable program segment */
-#define PT_DYNAMIC	2		/* Dynamic linking information */
-#define PT_INTERP	3		  /* Program interpreter */
-#define PT_NOTE		4		  /* Auxiliary information */
-#define PT_SHLIB	5		  /* Reserved */
-#define PT_PHDR		6		  /* Entry for header table itself */
-#define PT_TLS		7		  /* Thread-local storage segment */
-#define	PT_NUM		8		  /* Number of defined types */
-
-#define PF_X		(1 << 0)	/* Segment is executable */
-#define PF_W		(1 << 1)	/* Segment is writable */
-#define PF_R		(1 << 2)	/* Segment is readable */
-
-#endif // !SYSTEM_HAS_ELF_H
+  #define PF_X		(1 << 0)	/* Segment is executable */
+  #define PF_W		(1 << 1)	/* Segment is writable */
+  #define PF_R		(1 << 2)	/* Segment is readable */
+#endif
 
 
 // 바이너리 영역 래핑 구조체
@@ -122,4 +120,4 @@ private:
 };
 
 
-#endif // ELF32_PARSER_H
+#endif
