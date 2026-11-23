@@ -24,7 +24,7 @@ public:
     return std::format("{:<7} x{}, x{}, x{}", 
                        mnemonic_, rd_, rs1_, rs2_);
   }
-protected:
+private:
   uint32_t rd_, rs1_, rs2_;
 };
 
@@ -75,7 +75,7 @@ public:
     return std::format("{:<7} x{}, x{}, {}", 
                        mnemonic_, rd_, rs1_, shamt_);
   }
-protected:
+private:
   uint32_t rd_, rs1_, shamt_;
 };
 
@@ -97,7 +97,7 @@ public:
     return std::format("{:<7} x{}, {}(x{})", 
                        mnemonic_, rs2_, imm_, rs1_);
   }
-protected:
+private:
   uint32_t rs1_, rs2_;
   int32_t imm_;
 };
@@ -126,7 +126,7 @@ public:
     return std::format("{:<7} x{}, x{}, 0x{:08x}", 
                        mnemonic_, rs1_, rs2_, target);
   }
-protected:
+private:
   uint32_t rs1_, rs2_;
   int32_t imm_;
 };
@@ -154,7 +154,7 @@ public:
     return std::format("{:<7} x{}, 0x{:08x}", 
                        mnemonic_, rd_, target);
   }
-protected:
+private:
   uint32_t rd_;
   int32_t imm_;
 };
@@ -176,7 +176,7 @@ public:
     return std::format("{:<7} x{}, 0x{:08x}", 
                        mnemonic_, rd_, val);
   }
-protected:
+private:
   uint32_t rd_;
   int32_t imm_;
 };
